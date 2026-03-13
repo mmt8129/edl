@@ -477,7 +477,7 @@
                     kayitlar = [];
                 }
             } else {
-                kayitlar = [];  // örnek kayıt yok
+                kayitlar = [];
                 verileriKaydet();
             }
         }
@@ -492,7 +492,6 @@
         let aktifKayitId = null;
         let galeriIndex = 0;
         let galeriResimList = [];
-        let galeriButonGorunur = true;
 
         // URL hash
         function hashdenIdAl() {
@@ -526,14 +525,6 @@
 
         // ---------- SAYFA GEÇİŞLERİ ----------
         function sayfaGoster(sayfaId) {
-            // Tüm modal ve düzenleme alanlarını kapat
-            document.getElementById('secenekModal').classList.remove('aktif');
-            document.getElementById('galeriModal').classList.remove('aktif');
-            document.getElementById('onayModal').classList.remove('aktif');
-            document.getElementById('baslikDuzenlemeAlani').style.display = 'none';
-            document.getElementById('baslikGoster').style.display = 'block';
-            document.getElementById('baslikDuzenleBtn').style.display = 'inline-flex';
-            
             document.querySelectorAll('.sayfa').forEach(s => s.classList.remove('aktif'));
             document.getElementById(sayfaId).classList.add('aktif');
             
@@ -541,6 +532,8 @@
                 hashGuncelle(null);
                 anaSayfayiGuncelle();
             }
+            
+            history.pushState(null, null, location.href);
         }
 
         function formatTarih(isoString) {
@@ -589,6 +582,7 @@
             document.getElementById('baslikGoster').innerText = kayit.baslik || 'BAŞLIK';
             document.getElementById('aciklamaMetin').innerText = kayit.aciklama || 'AÇIKLAMA YOK';
 
+            // RESİMLERİ YÜKLE
             const resimDiv = document.getElementById('resimListesi');
             resimDiv.innerHTML = '';
             
@@ -604,8 +598,6 @@
                             galeriIndex = index;
                             document.getElementById('galeriImg').src = kayit.resimler[galeriIndex];
                             document.getElementById('galeriModal').classList.add('aktif');
-                            galeriButonGorunur = true;
-                            document.getElementById('galeriKontrol').style.opacity = '1';
                         }
                     });
                     resimDiv.appendChild(kart);
@@ -615,29 +607,14 @@
             }
         }
 
-        // Galeri butonlarını toggle
-        window.toggleGaleriButonlari = function() {
-            const kontrol = document.getElementById('galeriKontrol');
-            galeriButonGorunur = !galeriButonGorunur;
-            kontrol.style.opacity = galeriButonGorunur ? '1' : '0';
-        };
-
-        // Android zoom için
-        let scale = 1;
-        document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-
         // ---------- OLAY DİNLEYİCİLER ----------
         document.addEventListener('DOMContentLoaded', () => {
-            // İlk state
             history.pushState(null, null, location.href);
 
-            // Telefon geri butonu
+            // Geri butonu
             window.addEventListener('popstate', (e) => {
                 e.preventDefault();
                 
-                // Önce açık modal varsa kapat
                 if (document.getElementById('secenekModal').classList.contains('aktif')) {
                     document.getElementById('secenekModal').classList.remove('aktif');
                     history.pushState(null, null, location.href);
@@ -650,31 +627,13 @@
                     return;
                 }
                 
-                if (document.getElementById('onayModal').classList.contains('aktif')) {
-                    document.getElementById('onayModal').classList.remove('aktif');
-                    history.pushState(null, null, location.href);
-                    return;
-                }
-                
-                // Düzenleme modundaysa iptal et
-                if (document.getElementById('baslikDuzenlemeAlani').style.display === 'block') {
-                    document.getElementById('baslikIptal').click();
-                    history.pushState(null, null, location.href);
-                    return;
-                }
-                
-                // Sayfa geçişi
                 const aktifSayfa = document.querySelector('.sayfa.aktif')?.id;
                 
                 if (aktifSayfa === 'detaySayfa') {
                     sayfaGoster('anaSayfa');
-                    history.pushState(null, null, location.href);
                 } else if (aktifSayfa === 'aciklamaDuzenlemeSayfa') {
                     sayfaGoster('detaySayfa');
-                    history.pushState(null, null, location.href);
                 } else {
-                    // Ana sayfada geri tuşuna basınca uygulamadan çıkabilir
-                    // Chrome'da çalışması için
                     history.pushState(null, null, location.href);
                 }
             });
@@ -687,7 +646,6 @@
                 sayfaGoster('detaySayfa');
             } else {
                 sayfaGoster('anaSayfa');
-                anaSayfayiGuncelle();
             }
 
             // Arama
@@ -713,7 +671,6 @@
             // Banner geri
             document.getElementById('bannerGeriBtn').addEventListener('click', () => {
                 sayfaGoster('anaSayfa');
-                history.pushState(null, null, location.href);
             });
 
             // Banner sil
@@ -763,7 +720,6 @@
                     document.getElementById('aciklamaTextarea').value = kayit.aciklama || '';
                 }
                 sayfaGoster('aciklamaDuzenlemeSayfa');
-                history.pushState(null, null, location.href);
             });
 
             document.getElementById('aciklamaKaydetBtn').addEventListener('click', () => {
@@ -782,83 +738,78 @@
                 sayfaGoster('detaySayfa');
             });
 
-// RESİM EKLE (hem galeri hem kamera için TEK FONKSİYON)
-function resimEkle(source) {
-    document.getElementById('secenekModal').classList.remove('aktif');
-    
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    
-    if (source === 'kamera') {
-        input.capture = 'environment';
-    }
-    
-    input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        // Dosya boyut kontrolü (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            alert('Dosya çok büyük! Maksimum 10MB.');
-            return;
-        }
-        
-        const reader = new FileReader();
-        
-        reader.onload = (event) => {
-            const kayit = kayitlar.find(k => k.id === aktifKayitId);
-            if (!kayit) return;
-            
-            // Resmi kaydet
-            if (!kayit.resimler) kayit.resimler = [];
-            kayit.resimler.push(event.target.result);
-            
-            // Tarihi güncelle
-            kayit.guncelleme = new Date().toISOString();
-            
-            // localStorage'a kaydet
-            verileriKaydet();
-            
-            // DETAY SAYFASINI TAMAMEN YENİDEN YÜKLE (en garantisi)
-            detaySayfasiYukle(aktifKayitId);
-            
-            // Kısa bir süre sonra başarılı mesajı
-            setTimeout(() => {
-                alert('✅ Fotoğraf eklendi!');
-            }, 50);
-        };
-        
-        reader.onerror = () => {
-            alert('Fotoğraf yüklenirken hata oluştu.');
-        };
-        
-        reader.readAsDataURL(file);
-    };
-    
-    input.click();
-}
+            // RESİM EKLE BUTONU
+            document.getElementById('resimEkleBtn').addEventListener('click', () => {
+                document.getElementById('secenekModal').classList.add('aktif');
+                history.pushState(null, null, location.href);
+            });
 
-// Galeriden seç butonu
-document.getElementById('galeriSec').addEventListener('click', () => {
-    resimEkle('galeri');
-});
+            // RESİM EKLEME FONKSİYONU (TEK VE TEMİZ)
+            function resimEkleVeGuncelle(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                    if (!kayit) return;
+                    
+                    if (!kayit.resimler) kayit.resimler = [];
+                    kayit.resimler.push(event.target.result);
+                    
+                    kayit.guncelleme = new Date().toISOString();
+                    verileriKaydet();
+                    
+                    // Sayfayı yeniden yükle (EN GARANTİSİ)
+                    detaySayfasiYukle(aktifKayitId);
+                };
+                
+                reader.readAsDataURL(file);
+            }
 
-// Kamera ile çek butonu
-document.getElementById('kameraSec').addEventListener('click', () => {
-    resimEkle('kamera');
-});
+            // GALERİDEN SEÇ
+            document.getElementById('galeriSec').addEventListener('click', () => {
+                document.getElementById('secenekModal').classList.remove('aktif');
+                
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    resimEkleVeGuncelle(file);
+                };
+                
+                input.click();
+            });
 
-// İptal butonu
-document.getElementById('secenekIptal').addEventListener('click', () => {
-    document.getElementById('secenekModal').classList.remove('aktif');
-});
+            // KAMERA İLE ÇEK
+            document.getElementById('kameraSec').addEventListener('click', () => {
+                document.getElementById('secenekModal').classList.remove('aktif');
+                
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment';
+                
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    resimEkleVeGuncelle(file);
+                };
+                
+                input.click();
+            });
 
+            // İPTAL
             document.getElementById('secenekIptal').addEventListener('click', () => {
                 document.getElementById('secenekModal').classList.remove('aktif');
             });
 
-        
+            // GALERİ MODAL
+            document.getElementById('galeriKapat').addEventListener('click', () => {
+                document.getElementById('galeriModal').classList.remove('aktif');
+            });
+
             document.getElementById('galeriOnce').addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (galeriResimList.length > 0) {
@@ -884,6 +835,7 @@ document.getElementById('secenekIptal').addEventListener('click', () => {
                             if (kayit && kayit.resimler && kayit.resimler.length > galeriIndex) {
                                 kayit.resimler.splice(galeriIndex, 1);
                                 guncellemeTarihiSet(kayit);
+                                
                                 if (kayit.resimler.length === 0) {
                                     document.getElementById('galeriModal').classList.remove('aktif');
                                 } else {
@@ -891,6 +843,7 @@ document.getElementById('secenekIptal').addEventListener('click', () => {
                                     galeriIndex = Math.min(galeriIndex, kayit.resimler.length - 1);
                                     document.getElementById('galeriImg').src = kayit.resimler[galeriIndex];
                                 }
+                                
                                 detaySayfasiYukle(aktifKayitId);
                             }
                         }
@@ -898,51 +851,25 @@ document.getElementById('secenekIptal').addEventListener('click', () => {
                 }
             });
 
-            // Galeri dışına tıklama kapatma
+            // Galeri dışına tıklama
             document.getElementById('galeriModal').addEventListener('click', (e) => {
                 if (e.target === document.getElementById('galeriModal')) {
                     document.getElementById('galeriModal').classList.remove('aktif');
                 }
             });
 
-            // Android zoom için
+            // Zoom için
+            let scale = 1;
             const galeriImg = document.getElementById('galeriImg');
-            let initialDistance = 0;
             
             galeriImg.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     e.preventDefault();
-                    const dx = e.touches[0].pageX - e.touches[1].pageX;
-                    const dy = e.touches[0].pageY - e.touches[1].pageY;
-                    initialDistance = Math.sqrt(dx * dx + dy * dy);
                 }
             });
 
-            galeriImg.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2) {
-                    e.preventDefault();
-                    const dx = e.touches[0].pageX - e.touches[1].pageX;
-                    const dy = e.touches[0].pageY - e.touches[1].pageY;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (initialDistance > 0) {
-                        if (distance > initialDistance) {
-                            scale = Math.min(scale + 0.01, 3);
-                        } else {
-                            scale = Math.max(scale - 0.01, 1);
-                        }
-                        galeriImg.style.transform = `scale(${scale})`;
-                    }
-                }
-            });
-
-            galeriImg.addEventListener('touchend', (e) => {
-                initialDistance = 0;
-            });
-
-            // Çift tıklama ile sıfırla
             galeriImg.addEventListener('dblclick', () => {
-                scale = 1;
+                scale = scale === 1 ? 2 : 1;
                 galeriImg.style.transform = `scale(${scale})`;
             });
         });

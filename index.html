@@ -254,15 +254,18 @@
             -webkit-overflow-scrolling: touch;
         }
         .galeri-resim {
-            max-width: 100%;              /* ekrana sığsın */
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            cursor: zoom-in;
-            transition: transform 0.2s;
-            touch-action: pan-x pan-y pinch-zoom;  /* iki parmak zoom izni */
-        }
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    cursor: zoom-in;
+    transition: transform 0.2s;
+    /* Android zoom için */
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: pan-x pan-y pinch-zoom;  /* zoom izni */
+}
         .galeri-zoom {
             transform: scale(1.5);
             cursor: zoom-out;
@@ -627,6 +630,73 @@
                 anaSayfayiGuncelle();
             }
 
+// Geri butonu için state yönetimi
+let oncekiSayfa = 'anaSayfa';
+let modalAcik = false;
+
+// Telefon geri butonunu yakala
+window.addEventListener('popstate', (e) => {
+    e.preventDefault();
+    
+    // Önce açık modal varsa kapat
+    if (document.getElementById('secenekModal').classList.contains('aktif')) {
+        document.getElementById('secenekModal').classList.remove('aktif');
+        history.pushState(null, null, location.href);
+        return;
+    }
+    
+    if (document.getElementById('galeriModal').classList.contains('aktif')) {
+        document.getElementById('galeriModal').classList.remove('aktif');
+        history.pushState(null, null, location.href);
+        return;
+    }
+    
+    if (document.getElementById('onayModal').classList.contains('aktif')) {
+        document.getElementById('onayModal').classList.remove('aktif');
+        history.pushState(null, null, location.href);
+        return;
+    }
+    
+    // Düzenleme modundaysa iptal et
+    if (document.getElementById('baslikDuzenlemeAlani').style.display === 'block') {
+        document.getElementById('baslikIptal').click();
+        history.pushState(null, null, location.href);
+        return;
+    }
+    
+    // Sayfa geçişi
+    const aktifSayfa = document.querySelector('.sayfa.aktif')?.id;
+    if (aktifSayfa === 'detaySayfa') {
+        sayfaGoster('anaSayfa');
+    } else if (aktifSayfa === 'aciklamaDuzenlemeSayfa') {
+        sayfaGoster('detaySayfa');
+    } else {
+        // Ana sayfadaysa çıkış yapma
+        history.pushState(null, null, location.href);
+    }
+});
+
+// Her sayfa geçişinde state ekle
+function sayfaGoster(sayfaId) {
+    document.querySelectorAll('.sayfa').forEach(s => s.classList.remove('aktif'));
+    document.getElementById(sayfaId).classList.add('aktif');
+    
+    // Modal ve düzenleme alanlarını kapat
+    document.getElementById('secenekModal').classList.remove('aktif');
+    document.getElementById('galeriModal').classList.remove('aktif');
+    document.getElementById('baslikDuzenlemeAlani').style.display = 'none';
+    document.getElementById('baslikGoster').style.display = 'block';
+    document.getElementById('baslikDuzenleBtn').style.display = 'inline-flex';
+    
+    if (sayfaId === 'anaSayfa') {
+        hashGuncelle(null);
+        anaSayfayiGuncelle();
+    }
+    
+    // State ekle
+    history.pushState(null, null, location.href);
+}
+
             // Arama
             document.getElementById('aramaInput').addEventListener('input', anaSayfayiGuncelle);
 
@@ -759,29 +829,33 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
             });
 
             document.getElementById('kameraSec').addEventListener('click', () => {
-                document.getElementById('secenekModal').classList.remove('aktif');
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.capture = 'environment';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                            if (kayit) {
-                                if (!kayit.resimler) kayit.resimler = [];
-                                kayit.resimler.push(event.target.result);
-                                guncellemeTarihiSet(kayit);
-                                detaySayfasiYukle(aktifKayitId);
-                            }
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                };
-                input.click();
-            });
+    document.getElementById('secenekModal').classList.remove('aktif');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';  // arka kamera
+    
+    // Android için özel çözüm
+    input.setAttribute('capture', 'camera');
+    
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                if (kayit) {
+                    if (!kayit.resimler) kayit.resimler = [];
+                    kayit.resimler.push(event.target.result);
+                    guncellemeTarihiSet(kayit);
+                    detaySayfasiYukle(aktifKayitId);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+    input.click();
+});
 
             document.getElementById('secenekIptal').addEventListener('click', () => {
                 document.getElementById('secenekModal').classList.remove('aktif');

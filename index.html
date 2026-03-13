@@ -812,24 +812,18 @@
                 input.click();
             });
 
- document.getElementById('kameraSec').addEventListener('click', () => {
+document.getElementById('kameraSec').addEventListener('click', () => {
     document.getElementById('secenekModal').classList.remove('aktif');
     
-    // Android Chrome için basit çözüm
+    // Android için en basit yöntem
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.setAttribute('capture', 'environment');  // arka kamera
+    // capture parametresini tamamen kaldır
     
     input.onchange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Dosya boyutunu kontrol et (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Dosya çok büyük! Lütfen 5MB altında bir fotoğraf seçin.');
-                return;
-            }
-            
             const reader = new FileReader();
             reader.onload = (event) => {
                 const kayit = kayitlar.find(k => k.id === aktifKayitId);
@@ -838,26 +832,11 @@
                     kayit.resimler.push(event.target.result);
                     guncellemeTarihiSet(kayit);
                     detaySayfasiYukle(aktifKayitId);
-                    
-                    // Başarılı mesajı
-                    setTimeout(() => {
-                        alert('📸 Fotoğraf eklendi!');
-                    }, 100);
                 }
             };
-            
-            reader.onerror = () => {
-                alert('Fotoğraf yüklenirken hata oluştu. Tekrar deneyin.');
-            };
-            
             reader.readAsDataURL(file);
         }
     };
-    
-    input.onerror = () => {
-        alert('Kamera açılamadı. Galeriden seçmeyi deneyin.');
-    };
-    
     input.click();
 });
 

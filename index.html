@@ -782,79 +782,76 @@
                 sayfaGoster('detaySayfa');
             });
 
-            // RESİM EKLE
-            document.getElementById('resimEkleBtn').addEventListener('click', () => {
-                document.getElementById('secenekModal').classList.add('aktif');
-                history.pushState(null, null, location.href);
-            });
-
-            document.getElementById('galeriSec').addEventListener('click', () => {
-                document.getElementById('secenekModal').classList.remove('aktif');
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                            if (kayit) {
-                                if (!kayit.resimler) kayit.resimler = [];
-                                kayit.resimler.push(event.target.result);
-                                guncellemeTarihiSet(kayit);
-                                detaySayfasiYukle(aktifKayitId);
-                            }
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                };
-                input.click();
-            });
-
-document.getElementById('kameraSec').addEventListener('click', () => {
+// RESİM EKLE (hem galeri hem kamera için TEK FONKSİYON)
+function resimEkle(source) {
     document.getElementById('secenekModal').classList.remove('aktif');
     
-    // Android için basit çözüm
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     
+    if (source === 'kamera') {
+        input.capture = 'environment';
+    }
+    
     input.onchange = (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            
-            reader.onload = (event) => {
-                const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                if (kayit) {
-                    if (!kayit.resimler) kayit.resimler = [];
-                    kayit.resimler.push(event.target.result);
-                    guncellemeTarihiSet(kayit);
-                    
-                    // RESİM LİSTESİNİ YENİDEN YÜKLE (en garanti yöntem)
-                    detaySayfasiYukle(aktifKayitId);
-                    
-                    // Başarılı mesajı
-                    setTimeout(() => {
-                        alert('📸 Fotoğraf eklendi!');
-                    }, 100);
-                }
-            };
-            
-            reader.onerror = () => {
-                alert('Fotoğraf yüklenirken hata oluştu.');
-            };
-            
-            reader.readAsDataURL(file);
+        if (!file) return;
+        
+        // Dosya boyut kontrolü (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Dosya çok büyük! Maksimum 10MB.');
+            return;
         }
-    };
-    
-    input.onerror = () => {
-        alert('Kamera açılamadı.');
+        
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            const kayit = kayitlar.find(k => k.id === aktifKayitId);
+            if (!kayit) return;
+            
+            // Resmi kaydet
+            if (!kayit.resimler) kayit.resimler = [];
+            kayit.resimler.push(event.target.result);
+            
+            // Tarihi güncelle
+            kayit.guncelleme = new Date().toISOString();
+            
+            // localStorage'a kaydet
+            verileriKaydet();
+            
+            // DETAY SAYFASINI TAMAMEN YENİDEN YÜKLE (en garantisi)
+            detaySayfasiYukle(aktifKayitId);
+            
+            // Kısa bir süre sonra başarılı mesajı
+            setTimeout(() => {
+                alert('✅ Fotoğraf eklendi!');
+            }, 50);
+        };
+        
+        reader.onerror = () => {
+            alert('Fotoğraf yüklenirken hata oluştu.');
+        };
+        
+        reader.readAsDataURL(file);
     };
     
     input.click();
+}
+
+// Galeriden seç butonu
+document.getElementById('galeriSec').addEventListener('click', () => {
+    resimEkle('galeri');
+});
+
+// Kamera ile çek butonu
+document.getElementById('kameraSec').addEventListener('click', () => {
+    resimEkle('kamera');
+});
+
+// İptal butonu
+document.getElementById('secenekIptal').addEventListener('click', () => {
+    document.getElementById('secenekModal').classList.remove('aktif');
 });
 
             document.getElementById('secenekIptal').addEventListener('click', () => {

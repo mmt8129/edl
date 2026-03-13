@@ -812,29 +812,24 @@
                 input.click();
             });
 
-document.getElementById('kameraSec').addEventListener('click', () => {
+ document.getElementById('kameraSec').addEventListener('click', () => {
     document.getElementById('secenekModal').classList.remove('aktif');
     
-    // Android için en basit yöntem
+    // Android Chrome için basit çözüm
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    // capture parametresini tamamen kaldır
+    input.setAttribute('capture', 'environment');  // arka kamera
     
     input.onchange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-          document.getElementById('kameraSec').addEventListener('click', () => {
-    document.getElementById('secenekModal').classList.remove('aktif');
-    
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    
-    input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
+            // Dosya boyutunu kontrol et (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Dosya çok büyük! Lütfen 5MB altında bir fotoğraf seçin.');
+                return;
+            }
+            
             const reader = new FileReader();
             reader.onload = (event) => {
                 const kayit = kayitlar.find(k => k.id === aktifKayitId);
@@ -842,34 +837,27 @@ document.getElementById('kameraSec').addEventListener('click', () => {
                     if (!kayit.resimler) kayit.resimler = [];
                     kayit.resimler.push(event.target.result);
                     guncellemeTarihiSet(kayit);
+                    detaySayfasiYukle(aktifKayitId);
                     
-                    // Resim listesini hemen güncelle
-                    const resimDiv = document.getElementById('resimListesi');
-                    const yeniKart = document.createElement('div');
-                    yeniKart.className = 'resim-kart';
-                    yeniKart.innerHTML = `<img src="${event.target.result}" data-index="${kayit.resimler.length-1}">`;
-                    
-                    yeniKart.addEventListener('click', (e) => {
-                        if (e.target.tagName === 'IMG') {
-                            galeriResimList = kayit.resimler;
-                            galeriIndex = kayit.resimler.length-1;
-                            document.getElementById('galeriImg').src = event.target.result;
-                            document.getElementById('galeriModal').classList.add('aktif');
-                            galeriButonGorunur = true;
-                            document.getElementById('galeriKontrol').style.opacity = '1';
-                        }
-                    });
-                    
-                    resimDiv.appendChild(yeniKart);
-                    
-                    // "RESİM YOK" yazısını kaldır
-                    const bosMesaj = resimDiv.querySelector('p');
-                    if (bosMesaj) bosMesaj.remove();
+                    // Başarılı mesajı
+                    setTimeout(() => {
+                        alert('📸 Fotoğraf eklendi!');
+                    }, 100);
                 }
             };
+            
+            reader.onerror = () => {
+                alert('Fotoğraf yüklenirken hata oluştu. Tekrar deneyin.');
+            };
+            
             reader.readAsDataURL(file);
         }
     };
+    
+    input.onerror = () => {
+        alert('Kamera açılamadı. Galeriden seçmeyi deneyin.');
+    };
+    
     input.click();
 });
 

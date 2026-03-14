@@ -1,4 +1,4 @@
-const CACHE_NAME = 'resimli-notlar-v1';
+const CACHE_NAME = 'Edelkrone-Notlar-v1';
 const urlsToCache = [
   'index.html',
   'manifest.json',

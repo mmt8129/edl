@@ -1,6 +1,6 @@
 const CACHE_NAME = 'resimli-notlar-v1';
 const urlsToCache = [
-  'edl_4.html',
+  'index.html',
   'manifest.json',
   'icon.png'
 ];

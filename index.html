@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!D<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -375,7 +375,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Edelkrone Notlar">
+    <meta name="apple-mobile-web-app-title" content="Resimli Notlar">
     <meta name="theme-color" content="#2b7be4">
 		
 	
@@ -489,29 +489,75 @@
 
 <script>
     (function() {
+        // ---------- CONFIG ----------
+        const CONFIG = {
+            IMGBB_API_KEY: '176f42d16abd94bd651530d5e098e656',
+            JSONBIN_API_KEY: '$2a$10$tNJK6OrbROX1zOsMFq6qPOAR5GzSo58H5feEszQw47PPpn.lCJLMS',
+            JSONBIN_BIN_ID: '69b5ebc0aa77b81da9e5a491',
+            JSONBIN_URL: 'https://api.jsonbin.io/v3/b/69b5ebc0aa77b81da9e5a491'
+        };
+
         // ---------- VERİLER ----------
         let kayitlar = [];
         let onayCallback = null;
 
-        function verileriYukle() {
-            const stored = localStorage.getItem('resimliNotlar');
-            if (stored) {
-                try {
-                    kayitlar = JSON.parse(stored);
-                } catch (e) {
-                    kayitlar = [];
-                }
-            } else {
-                kayitlar = [];  // örnek kayıt yok
-                verileriKaydet();
+        // JSONbin'den verileri yükle
+        async function verileriYukle() {
+            try {
+                const response = await fetch(CONFIG.JSONBIN_URL + '/latest', {
+                    headers: {
+                        'X-Master-Key': CONFIG.JSONBIN_API_KEY
+                    }
+                });
+                const data = await response.json();
+                kayitlar = data.record || [];
+                if (!Array.isArray(kayitlar)) kayitlar = [];
+                anaSayfayiGuncelle();
+            } catch (e) {
+                console.log('JSONbin yüklenemedi, boş başlandı');
+                kayitlar = [];
+                anaSayfayiGuncelle();
             }
         }
 
-        function verileriKaydet() {
-            localStorage.setItem('resimliNotlar', JSON.stringify(kayitlar));
+        // JSONbin'e kaydet
+        async function verileriKaydet() {
+            try {
+                await fetch(CONFIG.JSONBIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': CONFIG.JSONBIN_API_KEY
+                    },
+                    body: JSON.stringify(kayitlar)
+                });
+            } catch (e) {
+                console.log('JSONbin kaydedilemedi');
+            }
         }
 
-        verileriYukle();
+        // ImgBB'ye resim yükle
+        async function resmiImgBBYukle(base64Data) {
+            const formData = new FormData();
+            formData.append('key', CONFIG.IMGBB_API_KEY);
+            formData.append('image', base64Data.split(',')[1]); // base64 kısmını ayır
+            
+            try {
+                const response = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    return data.data.url; // Resmin URL'sini döndür
+                } else {
+                    throw new Error('ImgBB yükleme hatası');
+                }
+            } catch (e) {
+                console.log('ImgBB hatası:', e);
+                return null;
+            }
+        }
 
         // ---------- STATE ----------
         let aktifKayitId = null;
@@ -581,19 +627,7 @@
 
         // Ana sayfa
         function anaSayfayiGuncelle() {
-		
- // Boş kartları temizle
-    const bosKartlar = kayitlar.filter(k => 
-        (k.baslik === 'YENİ BAŞLIK' && k.aciklama === ' ' && k.resimler.length === 0) ||
-        (k.baslik?.trim() === '' && k.aciklama?.trim() === '' && k.resimler.length === 0)
-    );
-    
-    if (bosKartlar.length > 0) {
-        kayitlar = kayitlar.filter(k => !bosKartlar.includes(k));
-        verileriKaydet();
-    }
-    
-    const arama = document.getElementById('aramaInput').value.toUpperCase().trim();
+            const arama = document.getElementById('aramaInput').value.toUpperCase().trim();
             let filtrelenmis = kayitlar.filter(k => k.baslik.toUpperCase().includes(arama));
             filtrelenmis.sort((a, b) => a.baslik.localeCompare(b.baslik, 'tr', { sensitivity: 'base' }));
 
@@ -666,7 +700,10 @@
         });
 
         // ---------- OLAY DİNLEYİCİLER ----------
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Önce verileri yükle
+            await verileriYukle();
+            
             // İlk state
             history.pushState(null, null, location.href);
 
@@ -710,8 +747,6 @@
                     sayfaGoster('detaySayfa');
                     history.pushState(null, null, location.href);
                 } else {
-                    // Ana sayfada geri tuşuna basınca uygulamadan çıkabilir
-                    // Chrome'da çalışması için
                     history.pushState(null, null, location.href);
                 }
             });
@@ -724,42 +759,29 @@
                 sayfaGoster('detaySayfa');
             } else {
                 sayfaGoster('anaSayfa');
-                anaSayfayiGuncelle();
             }
 
             // Arama
             document.getElementById('aramaInput').addEventListener('input', anaSayfayiGuncelle);
 
-            // Yeni ekle - DEĞİŞTİRİLECEK KISIM
-document.getElementById('yeniEkleBtn').addEventListener('click', () => {
-    const yeniId = Date.now();
-    
-    // ÖNCE: varsa boş kartları temizle
-    const bosKartlar = kayitlar.filter(k => 
-        (k.baslik === ' ' && k.aciklama === ' ' && k.resimler.length === 0) ||
-        (k.baslik?.trim() === '' && k.aciklama?.trim() === '' && k.resimler.length === 0)
-    );
-    
-    if (bosKartlar.length > 0) {
-        // Boş kartları sil
-        kayitlar = kayitlar.filter(k => !bosKartlar.includes(k));
-        verileriKaydet();
-    }
-    
-    // Yeni kart ekle
-    kayitlar.push({
-        id: yeniId,
-        baslik: ' ',
-        aciklama: ' ',
-        resimler: [],
-        guncelleme: new Date().toISOString()
-    });
-    verileriKaydet();
-    aktifKayitId = yeniId;
-    detaySayfasiYukle(yeniId);
-    hashGuncelle(yeniId);
-    sayfaGoster('detaySayfa');
-});
+            // Yeni ekle
+            document.getElementById('yeniEkleBtn').addEventListener('click', async () => {
+                const yeniId = Date.now();
+                
+                kayitlar.push({
+                    id: yeniId,
+                    baslik: 'YENİ PARÇA',
+                    aciklama: ' ',
+                    resimler: [],
+                    guncelleme: new Date().toISOString()
+                });
+                
+                await verileriKaydet();
+                aktifKayitId = yeniId;
+                detaySayfasiYukle(yeniId);
+                hashGuncelle(yeniId);
+                sayfaGoster('detaySayfa');
+            });
 
             // Banner geri
             document.getElementById('bannerGeriBtn').addEventListener('click', () => {
@@ -769,10 +791,10 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
 
             // Banner sil
             document.getElementById('bannerSilBtn').addEventListener('click', () => {
-                onayGoster('🗑️ KAYDI TAMAMEN SİL?', (onay) => {
+                onayGoster('🗑️ KAYDI TAMAMEN SİL?', async (onay) => {
                     if (onay) {
                         kayitlar = kayitlar.filter(k => k.id !== aktifKayitId);
-                        verileriKaydet();
+                        await verileriKaydet();
                         sayfaGoster('anaSayfa');
                     }
                 });
@@ -787,12 +809,13 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
                 history.pushState(null, null, location.href);
             });
 
-            document.getElementById('baslikKaydet').addEventListener('click', () => {
+            document.getElementById('baslikKaydet').addEventListener('click', async () => {
                 const yeniBaslik = document.getElementById('baslikInput').value.trim() || 'BAŞLIK';
                 const kayit = kayitlar.find(k => k.id === aktifKayitId);
                 if (kayit) {
                     kayit.baslik = yeniBaslik;
                     guncellemeTarihiSet(kayit);
+                    await verileriKaydet();
                 }
                 document.getElementById('baslikGoster').innerText = yeniBaslik;
                 document.getElementById('baslikGoster').style.display = 'block';
@@ -817,12 +840,13 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
                 history.pushState(null, null, location.href);
             });
 
-            document.getElementById('aciklamaKaydetBtn').addEventListener('click', () => {
+            document.getElementById('aciklamaKaydetBtn').addEventListener('click', async () => {
                 const yeniAciklama = document.getElementById('aciklamaTextarea').value.trim() || 'Açıklama yok';
                 const kayit = kayitlar.find(k => k.id === aktifKayitId);
                 if (kayit) {
                     kayit.aciklama = yeniAciklama;
                     guncellemeTarihiSet(kayit);
+                    await verileriKaydet();
                 }
                 document.getElementById('aciklamaMetin').innerText = yeniAciklama;
                 sayfaGoster('detaySayfa');
@@ -839,22 +863,30 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
                 history.pushState(null, null, location.href);
             });
 
+            // Galeriden seç
             document.getElementById('galeriSec').addEventListener('click', () => {
                 document.getElementById('secenekModal').classList.remove('aktif');
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = 'image/*';
-                input.onchange = (e) => {
+                input.onchange = async (e) => {
                     const file = e.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = (event) => {
-                            const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                            if (kayit) {
-                                if (!kayit.resimler) kayit.resimler = [];
-                                kayit.resimler.push(event.target.result);
-                                guncellemeTarihiSet(kayit);
-                                detaySayfasiYukle(aktifKayitId);
+                        reader.onload = async (event) => {
+                            // Önce ImgBB'ye yükle
+                            const imgUrl = await resmiImgBBYukle(event.target.result);
+                            if (imgUrl) {
+                                const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                                if (kayit) {
+                                    if (!kayit.resimler) kayit.resimler = [];
+                                    kayit.resimler.push(imgUrl);
+                                    guncellemeTarihiSet(kayit);
+                                    await verileriKaydet();
+                                    detaySayfasiYukle(aktifKayitId);
+                                }
+                            } else {
+                                alert('Resim yüklenemedi!');
                             }
                         };
                         reader.readAsDataURL(file);
@@ -863,54 +895,51 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
                 input.click();
             });
 
- document.getElementById('kameraSec').addEventListener('click', () => {
-    document.getElementById('secenekModal').classList.remove('aktif');
-    
-    // Android Chrome için basit çözüm
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.setAttribute('capture', 'environment');  // arka kamera
-    
-    input.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Dosya boyutunu kontrol et (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Dosya çok büyük! Lütfen 5MB altında bir fotoğraf seçin.');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                if (kayit) {
-                    if (!kayit.resimler) kayit.resimler = [];
-                    kayit.resimler.push(event.target.result);
-                    guncellemeTarihiSet(kayit);
-                    detaySayfasiYukle(aktifKayitId);
-                    
-                    // Başarılı mesajı
-                    setTimeout(() => {
-                        alert('📸 Fotoğraf eklendi!');
-                    }, 100);
-                }
-            };
-            
-            reader.onerror = () => {
-                alert('Fotoğraf yüklenirken hata oluştu. Tekrar deneyin.');
-            };
-            
-            reader.readAsDataURL(file);
-        }
-    };
-    
-    input.onerror = () => {
-        alert('Kamera açılamadı. Galeriden seçmeyi deneyin.');
-    };
-    
-    input.click();
-});
+            // Kamera ile çek
+            document.getElementById('kameraSec').addEventListener('click', () => {
+                document.getElementById('secenekModal').classList.remove('aktif');
+                
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.setAttribute('capture', 'environment');
+                
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        // Dosya boyutunu kontrol et (max 10MB)
+                        if (file.size > 10 * 1024 * 1024) {
+                            alert('Dosya çok büyük! Lütfen 10MB altında bir fotoğraf seçin.');
+                            return;
+                        }
+                        
+                        const reader = new FileReader();
+                        reader.onload = async (event) => {
+                            // Önce ImgBB'ye yükle
+                            const imgUrl = await resmiImgBBYukle(event.target.result);
+                            if (imgUrl) {
+                                const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                                if (kayit) {
+                                    if (!kayit.resimler) kayit.resimler = [];
+                                    kayit.resimler.push(imgUrl);
+                                    guncellemeTarihiSet(kayit);
+                                    await verileriKaydet();
+                                    detaySayfasiYukle(aktifKayitId);
+                                    
+                                    setTimeout(() => {
+                                        alert('📸 Fotoğraf eklendi!');
+                                    }, 100);
+                                }
+                            } else {
+                                alert('Fotoğraf yüklenemedi!');
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                
+                input.click();
+            });
 
             document.getElementById('secenekIptal').addEventListener('click', () => {
                 document.getElementById('secenekModal').classList.remove('aktif');
@@ -940,12 +969,14 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
             document.getElementById('galeriSil').addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (galeriResimList.length > 0) {
-                    onayGoster('🗑️ BU RESMİ SİL?', (onay) => {
+                    onayGoster('🗑️ BU RESMİ SİL?', async (onay) => {
                         if (onay) {
                             const kayit = kayitlar.find(k => k.id === aktifKayitId);
                             if (kayit && kayit.resimler && kayit.resimler.length > galeriIndex) {
                                 kayit.resimler.splice(galeriIndex, 1);
                                 guncellemeTarihiSet(kayit);
+                                await verileriKaydet();
+                                
                                 if (kayit.resimler.length === 0) {
                                     document.getElementById('galeriModal').classList.remove('aktif');
                                 } else {

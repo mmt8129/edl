@@ -1008,5 +1008,19 @@ document.getElementById('yeniEkleBtn').addEventListener('click', () => {
         });
     })();
 </script>
+	<script>
+    // Service Worker'ı kaydet
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker başarıyla kaydedildi: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('ServiceWorker kaydedilemedi: ', err);
+                });
+        });
+    }
+</script>
 </body>
 </html>

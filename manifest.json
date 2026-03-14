@@ -2,7 +2,7 @@
   "name": "Resimli Notlar",
   "short_name": "ResimliNot",
   "description": "Resimli not alma uygulaması",
-  "start_url": "edl_4.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#faf9f6",
   "theme_color": "#2b7be4",

@@ -1,6 +1,6 @@
 {
-  "name": "Resimli Notlar",
-  "short_name": "ResimliNot",
+  "name": "Edelkrone Notlar",
+  "short_name": "edelkrone notlar",
   "description": "Resimli not alma uygulaması",
   "start_url": "index.html",
   "display": "standalone",

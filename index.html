@@ -440,6 +440,34 @@
                 <button id="resimEkleBtn">📷</button>
             </div>
             <div id="resimListesi" class="resim-grid"></div>
+
+<!-- RESİMLER KARTI -->
+<div class="detay-kart">
+    <div class="kart-baslik">
+        <span>🖼️ RESİMLER</span>
+        <button id="resimEkleBtn">📷</button>
+    </div>
+    
+    <!-- RESİM LİSTESİ -->
+    <div id="resimListesi" class="resim-grid"></div>
+    
+    <!-- YÜKLEME KARTI (başlangıçta gizli) -->
+    <div id="yuklemeKarti" style="display: none; margin-top: 10px;">
+        <div style="background: #f0f0f0; border-radius: 20px; padding: 20px; text-align: center; border: 3px dashed #2b7be4;">
+            <div style="font-size: 32px; animation: spin 1s linear infinite;">◎</div>
+            <div style="font-size: 14px; margin-top: 10px;">Fotoğraf yükleniyor...</div>
+        </div>
+    </div>
+</div>
+
+<!-- CSS'e spin animasyonu ekle (style içine) -->
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+			
         </div>
     </div>
 </div>
@@ -864,82 +892,112 @@
             });
 
             // Galeriden seç
-            document.getElementById('galeriSec').addEventListener('click', () => {
-                document.getElementById('secenekModal').classList.remove('aktif');
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = async (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                            // Önce ImgBB'ye yükle
-                            const imgUrl = await resmiImgBBYukle(event.target.result);
-                            if (imgUrl) {
-                                const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                                if (kayit) {
-                                    if (!kayit.resimler) kayit.resimler = [];
-                                    kayit.resimler.push(imgUrl);
-                                    guncellemeTarihiSet(kayit);
-                                    await verileriKaydet();
-                                    detaySayfasiYukle(aktifKayitId);
-                                }
-                            } else {
-                                alert('Resim yüklenemedi!');
-                            }
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                };
-                input.click();
-            });
-
-            // Kamera ile çek
-            document.getElementById('kameraSec').addEventListener('click', () => {
-                document.getElementById('secenekModal').classList.remove('aktif');
+document.getElementById('galeriSec').addEventListener('click', () => {
+    document.getElementById('secenekModal').classList.remove('aktif');
+    
+    // Yükleme kartını göster
+    const yuklemeKarti = document.getElementById('yuklemeKarti');
+    yuklemeKarti.style.display = 'block';
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                // ImgBB'ye yükle
+                const imgUrl = await resmiImgBBYukle(event.target.result);
                 
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.setAttribute('capture', 'environment');
-                
-                input.onchange = async (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        // Dosya boyutunu kontrol et (max 10MB)
-                        if (file.size > 10 * 1024 * 1024) {
-                            alert('Dosya çok büyük! Lütfen 10MB altında bir fotoğraf seçin.');
-                            return;
-                        }
+                if (imgUrl) {
+                    const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                    if (kayit) {
+                        if (!kayit.resimler) kayit.resimler = [];
+                        kayit.resimler.push(imgUrl);
+                        guncellemeTarihiSet(kayit);
+                        await verileriKaydet();
                         
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                            // Önce ImgBB'ye yükle
-                            const imgUrl = await resmiImgBBYukle(event.target.result);
-                            if (imgUrl) {
-                                const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                                if (kayit) {
-                                    if (!kayit.resimler) kayit.resimler = [];
-                                    kayit.resimler.push(imgUrl);
-                                    guncellemeTarihiSet(kayit);
-                                    await verileriKaydet();
-                                    detaySayfasiYukle(aktifKayitId);
-                                    
-                                    setTimeout(() => {
-                                        alert('📸 Fotoğraf eklendi!');
-                                    }, 100);
-                                }
-                            } else {
-                                alert('Fotoğraf yüklenemedi!');
-                            }
-                        };
-                        reader.readAsDataURL(file);
+                        // Yükleme kartını gizle
+                        yuklemeKarti.style.display = 'none';
+                        
+                        // Resim listesini yeniden yükle
+                        detaySayfasiYukle(aktifKayitId);
                     }
-                };
+                } else {
+                    alert('Resim yüklenemedi!');
+                    yuklemeKarti.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Hiç dosya seçilmediyse yükleme kartını gizle
+            yuklemeKarti.style.display = 'none';
+        }
+    };
+    input.click();
+});
+
+// Kamera ile çek
+document.getElementById('kameraSec').addEventListener('click', () => {
+    document.getElementById('secenekModal').classList.remove('aktif');
+    
+    // Yükleme kartını göster
+    const yuklemeKarti = document.getElementById('yuklemeKarti');
+    yuklemeKarti.style.display = 'block';
+    
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.setAttribute('capture', 'environment');
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Dosya boyutunu kontrol et (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Dosya çok büyük! Lütfen 10MB altında bir fotoğraf seçin.');
+                yuklemeKarti.style.display = 'none';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                // ImgBB'ye yükle
+                const imgUrl = await resmiImgBBYukle(event.target.result);
                 
-                input.click();
-            });
+                if (imgUrl) {
+                    const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                    if (kayit) {
+                        if (!kayit.resimler) kayit.resimler = [];
+                        kayit.resimler.push(imgUrl);
+                        guncellemeTarihiSet(kayit);
+                        await verileriKaydet();
+                        
+                        // Yükleme kartını gizle
+                        yuklemeKarti.style.display = 'none';
+                        
+                        // Resim listesini yeniden yükle
+                        detaySayfasiYukle(aktifKayitId);
+                        
+                        setTimeout(() => {
+                            alert('📸 Fotoğraf eklendi!');
+                        }, 100);
+                    }
+                } else {
+                    alert('Fotoğraf yüklenemedi!');
+                    yuklemeKarti.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Hiç dosya seçilmediyse yükleme kartını gizle
+            yuklemeKarti.style.display = 'none';
+        }
+    };
+    
+    input.click();
+});
 
             document.getElementById('secenekIptal').addEventListener('click', () => {
                 document.getElementById('secenekModal').classList.remove('aktif');

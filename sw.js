@@ -21,8 +21,17 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache'de varsa onu döndür
+        // Cache'de varsa onu döndür (hızlı açılış)
         if (response) {
+          // Arka planda güncelle (YENİ: cache'i yenile)
+          fetch(event.request).then(newResponse => {
+            if (newResponse && newResponse.status === 200) {
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, newResponse);
+              });
+            }
+          }).catch(() => {});
+          
           return response;
         }
         

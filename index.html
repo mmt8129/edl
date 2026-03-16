@@ -131,7 +131,6 @@ button:active { transform: scale(0.97); }
 #aciklamaInput {
     font-weight: normal !important;
 }
-
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -167,7 +166,7 @@ button:active { transform: scale(0.97); }
         <div class="detay-kart">
             <div class="kart-baslik"><span>📌 Parça Adı</span><button id="baslikDuzenleBtn">✏️</button></div>
             <div>
-                <span class="baslik-metin" id="baslikGoster">BAŞLIK</span>
+                <span class="baslik-metin" id="baslikGoster">PARÇA ADI</span>
                 <div id="baslikDuzenlemeAlani" style="display: none;">
                     <input type="text" id="baslikInput" class="baslik-input" placeholder="BAŞLIK GİR">
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
@@ -260,7 +259,7 @@ let galeriResimList = [];
 let galeriButonGorunur = true;
 let onayCallback = null;
 
-// ImgBB'ye resim yükle
+// ImgBB'ye resim yükle (delete_url'li versiyon)
 async function resmiImgbbYukle(base64Data) {
     const formData = new FormData();
     formData.append('key', '176f42d16abd94bd651530d5e098e656');
@@ -274,7 +273,10 @@ async function resmiImgbbYukle(base64Data) {
         
         const data = await response.json();
         if (data.success) {
-            return data.data.url;
+            return {
+                url: data.data.url,
+                delete_url: data.data.delete_url
+            };
         } else {
             console.error('ImgBB hatası:', data);
             return null;
@@ -282,26 +284,6 @@ async function resmiImgbbYukle(base64Data) {
     } catch (e) {
         console.error('ImgBB bağlantı hatası:', e);
         return null;
-    }
-}
-
-// ImgBB'den resim sil
-async function resmiImgbbSil(resimUrl) {
-    try {
-        // ImgBB'nin silme API'si
-        const deleteResponse = await fetch(`https://api.imgbb.com/1/delete?key=176f42d16abd94bd651530d5e098e656`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: resimUrl })
-        });
-        
-        const data = await deleteResponse.json();
-        return data.success;
-    } catch (e) {
-        console.error('ImgBB silme hatası:', e);
-        return false;
     }
 }
 
@@ -399,7 +381,7 @@ function anaSayfayiGuncelle() {
     filtrelenmis.forEach(k => {
         const item = document.createElement('div');
         item.className = 'baslik-item';
-        item.innerHTML = `<span data-id="${k.id}">${k.baslik || 'BAŞLIKSIZ'}</span>`;
+        item.innerHTML = `<span data-id="${k.id}">${k.baslik || 'PARÇA ADI'}</span>`;
         listeDiv.appendChild(item);
     });
     
@@ -414,27 +396,36 @@ function anaSayfayiGuncelle() {
     });
 }
 
+// Resim URL'sini güvenli şekilde al (string veya nesne olabilir)
+function resimUrlAl(resim) {
+    if (typeof resim === 'string') return resim;
+    if (resim && typeof resim === 'object' && resim.url) return resim.url;
+    return '';
+}
+
 function detaySayfasiYukle(id) {
     const kayit = kayitlar.find(k => k.id === id);
     if (!kayit) return;
     
     document.querySelector('#bannerTarih .tarih-deger').innerText = `📅 ${formatTarih(kayit.guncelleme)}`;
-    document.getElementById('baslikGoster').innerText = kayit.baslik || 'Parça adı';
+    document.getElementById('baslikGoster').innerText = kayit.baslik || 'PARÇA ADI';
     document.getElementById('aciklamaMetin').innerText = kayit.aciklama || 'AÇIKLAMA YOK';
     
     const resimDiv = document.getElementById('resimListesi');
     resimDiv.innerHTML = '';
     
     if (kayit.resimler && kayit.resimler.length > 0) {
-        kayit.resimler.forEach((resimUrl, index) => {
+        kayit.resimler.forEach((resim, index) => {
+            const resimUrl = resimUrlAl(resim);
             const kart = document.createElement('div');
             kart.className = 'resim-kart';
             kart.innerHTML = `<img src="${resimUrl}" data-index="${index}">`;
             kart.addEventListener('click', (e) => {
                 if (e.target.tagName === 'IMG') {
-                    galeriResimList = kayit.resimler;
+                    // Galeri listesini hazırla (tüm resimlerin URL'leri)
+                    galeriResimList = kayit.resimler.map(r => resimUrlAl(r));
                     galeriIndex = index;
-                    document.getElementById('galeriImg').src = kayit.resimler[galeriIndex];
+                    document.getElementById('galeriImg').src = galeriResimList[galeriIndex];
                     document.getElementById('galeriModal').classList.add('aktif');
                     galeriButonGorunur = true;
                     document.getElementById('galeriKontrol').style.opacity = '1';
@@ -503,10 +494,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             history.pushState(null, null, location.href); return;
         }
         
-        // Sayfa geçişi ve boş kart kontrolü
         const aktifSayfa = document.querySelector('.sayfa.aktif')?.id;
         if (aktifSayfa === 'detaySayfa') { 
-            // Detay sayfasından çıkarken boş kartı sil
             await bosKartSil(aktifKayitId);
             sayfaGoster('anaSayfa'); 
             history.pushState(null, null, location.href); 
@@ -527,7 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Arama
     document.getElementById('aramaInput').addEventListener('input', anaSayfayiGuncelle);
 
-    // Yeni ekle (BOŞ KART ENGELLEMELİ - BEKLEMESİZ)
+    // Yeni ekle (BOŞ KART ENGELLEMELİ)
     document.getElementById('yeniEkleBtn').addEventListener('click', async () => {
         const yeniId = Date.now();
         const yeniKayit = { 
@@ -545,11 +534,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         detaySayfasiYukle(yeniId);
         hashGuncelle(yeniId);
         sayfaGoster('detaySayfa');
-        
-        // setTimeout YOK - anında kontrol geri butonunda yapılacak
     });
 
-    // Banner geri (DÜZELTİLDİ - boş kart kontrolü eklendi)
+    // Banner geri
     document.getElementById('bannerGeriBtn').addEventListener('click', async () => { 
         await bosKartSil(aktifKayitId);
         sayfaGoster('anaSayfa'); 
@@ -567,16 +554,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // BAŞLIK DÜZENLE (input boş gelir)
+    // BAŞLIK DÜZENLE
     document.getElementById('baslikDuzenleBtn').addEventListener('click', () => {
         document.getElementById('baslikGoster').style.display = 'none';
         document.getElementById('baslikDuzenleBtn').style.display = 'none';
         document.getElementById('baslikDuzenlemeAlani').style.display = 'block';
-        
-        // BOŞ GELİR
         document.getElementById('baslikInput').value = '';
         document.getElementById('baslikInput').focus();
-        
         history.pushState(null, null, location.href);
     });
 
@@ -645,7 +629,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         history.pushState(null, null, location.href);
     });
 
-    // Galeriden Seç
+    // Galeriden Seç (YENİ - delete_url'li)
     document.getElementById('galeriSec').addEventListener('click', () => {
         document.getElementById('secenekModal').classList.remove('aktif');
         
@@ -656,21 +640,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         input.onchange = (e) => {
             const file = e.target.files[0];
             if (file) {
+                document.getElementById('yuklemeKarti').style.display = 'block';
+                
                 const reader = new FileReader();
                 reader.onload = async (event) => {
-                    const imgUrl = await resmiImgbbYukle(event.target.result);
+                    const result = await resmiImgbbYukle(event.target.result);
                     
-                    if (imgUrl) {
+                    if (result) {
                         const kayit = kayitlar.find(k => k.id === aktifKayitId);
                         if (kayit) {
                             if (!kayit.resimler) kayit.resimler = [];
-                            kayit.resimler.push(imgUrl);
+                            kayit.resimler.push({
+                                url: result.url,
+                                delete_url: result.delete_url
+                            });
                             guncellemeTarihiSet(kayit);
                             detaySayfasiYukle(aktifKayitId);
                         }
                     } else {
                         alert('Resim yüklenemedi!');
                     }
+                    document.getElementById('yuklemeKarti').style.display = 'none';
                 };
                 reader.readAsDataURL(file);
             }
@@ -678,7 +668,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         input.click();
     });
 
-    // Kamera ile Çek
+    // Kamera ile Çek (YENİ - delete_url'li)
     document.getElementById('kameraSec').addEventListener('click', () => {
         document.getElementById('secenekModal').classList.remove('aktif');
         
@@ -695,15 +685,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
                 
+                document.getElementById('yuklemeKarti').style.display = 'block';
+                
                 const reader = new FileReader();
                 reader.onload = async (event) => {
-                    const imgUrl = await resmiImgbbYukle(event.target.result);
+                    const result = await resmiImgbbYukle(event.target.result);
                     
-                    if (imgUrl) {
+                    if (result) {
                         const kayit = kayitlar.find(k => k.id === aktifKayitId);
                         if (kayit) {
                             if (!kayit.resimler) kayit.resimler = [];
-                            kayit.resimler.push(imgUrl);
+                            kayit.resimler.push({
+                                url: result.url,
+                                delete_url: result.delete_url
+                            });
                             guncellemeTarihiSet(kayit);
                             detaySayfasiYukle(aktifKayitId);
                             setTimeout(() => { alert('📸 Fotoğraf eklendi!'); }, 100);
@@ -711,6 +706,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     } else {
                         alert('Fotoğraf yüklenemedi!');
                     }
+                    document.getElementById('yuklemeKarti').style.display = 'none';
                 };
                 reader.readAsDataURL(file);
             }
@@ -722,7 +718,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('secenekModal').classList.remove('aktif'); 
     });
 
-    // GALERİ İŞLEMLERİ
+    // GALERİ İŞLEMLERİ (YENİ - delete_url'li silme)
     document.getElementById('galeriKapat').addEventListener('click', () => { 
         document.getElementById('galeriModal').classList.remove('aktif'); 
     });
@@ -743,34 +739,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-document.getElementById('galeriSil').addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (galeriResimList.length > 0) {
-        onayGoster('🗑️ BU RESMİ SİL?', async (onay) => {
-            if (onay) {
-                const kayit = kayitlar.find(k => k.id === aktifKayitId);
-                if (kayit && kayit.resimler && kayit.resimler.length > galeriIndex) {
-                    
-                    // ÖNCE ImgBB'den sil
-                    await resmiImgbbSil(kayit.resimler[galeriIndex]);
-                    
-                    // SONRA uygulamadan ve Firebase'den sil
-                    kayit.resimler.splice(galeriIndex, 1);
-                    guncellemeTarihiSet(kayit);
-                    
-                    if (kayit.resimler.length === 0) {
-                        document.getElementById('galeriModal').classList.remove('aktif');
-                    } else {
-                        galeriResimList = kayit.resimler;
-                        galeriIndex = Math.min(galeriIndex, kayit.resimler.length - 1);
-                        document.getElementById('galeriImg').src = kayit.resimler[galeriIndex];
+    document.getElementById('galeriSil').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (galeriResimList.length > 0) {
+            onayGoster('🗑️ BU RESMİ SİL?', async (onay) => {
+                if (onay) {
+                    const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                    if (kayit && kayit.resimler && kayit.resimler.length > galeriIndex) {
+                        
+                        const silinecekResim = kayit.resimler[galeriIndex];
+                        
+                        // Eğer delete_url varsa ImgBB silme sayfasını aç
+                        if (silinecekResim && silinecekResim.delete_url) {
+                            window.open(silinecekResim.delete_url, '_blank');
+                            alert('🗑️ ImgBB silme sayfası açıldı. Lütfen "Delete" butonuna tıklayın.');
+                        } else if (typeof silinecekResim === 'string') {
+                            alert('⚠️ Bu eski bir resim, delete_url yok. Sadece uygulamadan silinecek.');
+                        }
+                        
+                        // Firebase'den kaldır
+                        kayit.resimler.splice(galeriIndex, 1);
+                        guncellemeTarihiSet(kayit);
+                        
+                        if (kayit.resimler.length === 0) {
+                            document.getElementById('galeriModal').classList.remove('aktif');
+                        } else {
+                            galeriResimList = kayit.resimler.map(r => resimUrlAl(r));
+                            galeriIndex = Math.min(galeriIndex, kayit.resimler.length - 1);
+                            document.getElementById('galeriImg').src = galeriResimList[galeriIndex];
+                        }
+                        detaySayfasiYukle(aktifKayitId);
                     }
-                    detaySayfasiYukle(aktifKayitId);
                 }
-            }
-        });
-    }
-});
+            });
+        }
+    });
 
     document.getElementById('galeriModal').addEventListener('click', (e) => {
         if (e.target === document.getElementById('galeriModal')) {

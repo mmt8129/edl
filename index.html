@@ -1242,128 +1242,125 @@ body{
 <script>
 
 // ========================================
-// ANDROID GERİ BUTONU DESTEĞİ (PWA)
+// ANDROID GERİ TUŞU - PWA FIX
 // ========================================
 
-// Sayfa yüklendiğinde bir kez pushState yap
-// Böylece ilk geri tuşunda uygulama kapanmaz
-(function() {
-    if (window.history.length <= 1) {
-        history.pushState({ page: 'home', modal: null }, '', '');
-    }
-})();
+// 1. Sayfa yüklenince hemen bir history girişi ekle
+history.pushState({ _guard: true }, '', '');
 
-// Modal her açıldığında çağrılacak fonksiyon
-function pushModalState(modalName) {
-    history.pushState({ page: 'modal', modal: modalName }, '', '');
-}
+// 2. Geri tuşu yakalama
+window.addEventListener('popstate', function(e) {
+    const ovl = document.getElementById('ovl');
+    const viewer = document.getElementById('imageViewer');
+    const sortMenu = document.getElementById('sortMenu');
 
-// Geri tuşuna basıldığında
-window.addEventListener('popstate', function(event) {
-    const overlay = document.getElementById('ovl');
-    const imageView = document.getElementById('imageViewer');
-
-    // 1. Resim görüntüleyici açıksa önce onu kapat
-    if (imageView && imageView.classList.contains('show')) {
-        imageView.classList.remove('show');
-        // Modal hâlâ açıksa tekrar pushState yap
-        if (overlay && overlay.style.display === 'flex') {
-            history.pushState({ page: 'modal', modal: 'open' }, '', '');
+    // Resim görüntüleyici açıksa kapat
+    if (viewer && viewer.classList.contains('show')) {
+        viewer.classList.remove('show');
+        // Modal da açıksa tekrar koruma ekle
+        if (ovl && ovl.style.display === 'flex') {
+            history.pushState({ _guard: true }, '', '');
         }
         return;
     }
 
-    // 2. Modal açıksa modalı kapat
-    if (overlay && overlay.style.display === 'flex') {
-        overlay.style.display = 'none';
-        active = null;
-        activeSearchQuery = null;
-        // Sıralama menüsünü de kapat
-        const sortMenu = document.getElementById('sortMenu');
-        if (sortMenu) sortMenu.remove();
+    // Sıralama menüsü açıksa kapat
+    if (sortMenu && sortMenu.classList.contains('show')) {
+        sortMenu.classList.remove('show');
         document.getElementById('sortBtn')?.classList.remove('active');
+        sortMenu.remove();
+        history.pushState({ _guard: true }, '', '');
         return;
     }
 
-    // 3. Hiçbir şey açık değilse → bir kez daha pushState yap
-    //    (uygulamadan çıkmasın diye)
-    history.pushState({ page: 'home', modal: null }, '', '');
+    // Modal açıksa kapat
+    if (ovl && ovl.style.display === 'flex') {
+        ovl.style.display = 'none';
+        active = null;
+        activeSearchQuery = null;
+        return;
+    }
+
+    // Hiçbir şey açık değil → çıkma, geri koruma ekle
+    history.pushState({ _guard: true }, '', '');
 });
 
-// ========================================
-// MEVCUT openDetail FONKSİYONUNU SAR
-// (pushState eklemek için)
-// ========================================
-const _originalOpenDetail = openDetail;
+// 3. closeM fonksiyonunu patch'le
+const _oldCloseM = closeM;
+closeM = function() {
+    ovl.style.display = 'none';
+    active = null;
+    activeSearchQuery = null;
+    // History'den bir geri al (pushState ile eklediğimiz guard'ı)
+    // Ama popstate tetiklenmesin diye replaceState kullan
+    history.replaceState({ _guard: true }, '', '');
+};
+
+// 4. closeImageViewer fonksiyonunu patch'le
+const _oldCloseViewer = closeViewer;
+closeViewer = function() {
+    const viewer = document.getElementById('imageViewer');
+    if (viewer) viewer.classList.remove('show');
+};
+
+// 5. Her modal açılışında history'ye guard ekle
+const _oldOpenDetail = openDetail;
 openDetail = function(idx) {
-    _originalOpenDetail(idx);
-    pushModalState('detail-' + idx);
+    _oldOpenDetail(idx);
+    history.pushState({ _guard: true }, '', '');
 };
 
-// ========================================
-// MEVCUT openGeneralChat FONKSİYONUNU SAR
-// ========================================
-const _originalOpenGeneralChat2 = openGeneralChat;
+const _oldOpenGeneralChat = openGeneralChat;
 openGeneralChat = function() {
-    // pending kontrolü orijinal fonksiyonda zaten var
-    _originalOpenGeneralChat2();
-    pushModalState('general-chat');
+    _oldOpenGeneralChat();
+    history.pushState({ _guard: true }, '', '');
 };
 
-// ========================================
-// MEVCUT openSettings FONKSİYONUNU SAR
-// ========================================
-const _originalOpenSettings = openSettings;
+const _oldOpenSettings = openSettings;
 openSettings = function() {
-    _originalOpenSettings();
-    pushModalState('settings');
+    _oldOpenSettings();
+    history.pushState({ _guard: true }, '', '');
 };
 
-// ========================================
-// MEVCUT openRSSManager FONKSİYONUNU SAR
-// ========================================
-const _originalOpenRSSManager = openRSSManager;
+const _oldOpenRSSManager = openRSSManager;
 openRSSManager = function() {
-    _originalOpenRSSManager();
-    pushModalState('rss-manager');
+    _oldOpenRSSManager();
+    history.pushState({ _guard: true }, '', '');
 };
 
-// ========================================
-// MEVCUT openSavedList FONKSİYONUNU SAR
-// (bu fonksiyon kodda tanımlı olmalı)
-// ========================================
+const _oldOpenAddRSS = openAddRSS;
+openAddRSS = function() {
+    _oldOpenAddRSS();
+    history.pushState({ _guard: true }, '', '');
+};
+
+const _oldEditRSS = editRSS;
+editRSS = function(key) {
+    _oldEditRSS(key);
+    history.pushState({ _guard: true }, '', '');
+};
+
+const _oldConfirmDeleteRSS = confirmDeleteRSS;
+confirmDeleteRSS = function(key) {
+    _oldConfirmDeleteRSS(key);
+    history.pushState({ _guard: true }, '', '');
+};
+
+const _oldOpenGallery = openGallery;
+openGallery = function(images, startIndex) {
+    _oldOpenGallery(images, startIndex);
+    history.pushState({ _guard: true }, '', '');
+};
+
+// 6. openSavedList varsa onu da sar
 if (typeof openSavedList === 'function') {
-    const _originalOpenSavedList = openSavedList;
+    const _oldOpenSavedList = openSavedList;
     openSavedList = function() {
-        _originalOpenSavedList();
-        pushModalState('saved-list');
+        _oldOpenSavedList();
+        history.pushState({ _guard: true }, '', '');
     };
 }
 
-// ========================================
-// openGallery için de pushState ekle
-// ========================================
-const _originalOpenGallery = openGallery;
-openGallery = function(images, startIndex) {
-    _originalOpenGallery(images, startIndex);
-    pushModalState('gallery');
-};
-
-// closeM'yi de güncelle: modal kapanınca history geri al
-const _originalCloseM = closeM;
-closeM = function() {
-    _originalCloseM();
-    // popstate zaten tetiklenecek, ama emin olmak için:
-    const overlay = document.getElementById('ovl');
-    if (overlay) overlay.style.display = 'none';
-};
-
-
-window.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        updateSavedButton();
-    }, 500);
-});
 
 // --- 1. SİSTEM AYARLARI ---
 // GEMINI API - Bunu kendi anahtarınla değiştir

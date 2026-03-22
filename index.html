@@ -1,3737 +1,994 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icon.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-   <!-- HTML head kısmına ekleyin -->
-    <meta http-equiv="Content-Security-Policy" content="default-src * self blob: data: gap:; style-src * self 'unsafe-inline' blob: data: gap:; script-src * self 'unsafe-inline' 'unsafe-eval' blob: data: gap:; object-src * self blob: data: gap:; img-src * self 'unsafe-inline' blob: data: gap:; connect-src self * 'unsafe-inline' blob: data: gap:; frame-src * self blob: data: gap:;">
-    <title>Gemini Pro Dashboard v7</title>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Orbitron:wght@600&display=swap" rel="stylesheet">
-    <!-- Toast bildirimleri için -->
-<div id="toast" style="position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--card-bg); color:var(--text); padding:10px 20px; border-radius:30px; border:1px solid var(--brd); font-weight:600; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.15); opacity:0; transition:opacity 0.3s ease; pointer-events:none;">✅ Kaydedildi!</div>
-	<style>
-
-/* ============================= */
-/* 🍎 APPLE NEWS MODERN UI      */
-/* Mevcut JS sistemine tam uyum */
-/* ============================= */
-
-/* ========= TEMA DEĞİŞKENLERİ ========= */
-:root {
-    --primary:#e11d48;
-    --bg:#f5f5f7;
-    --text:#1d1d1f;
-    --muted:#6e6e73;
-    --card-bg:#ffffff;
-    --brd:#e5e5ea;
-    --header-bg:rgba(255,255,255,0.85);
-	
-	--size-color: #ef4444;    /* Kırmızı */
-    --weight-color: #3b82f6;   /* Mavi */
-    --content-color: #22c55e;  /* Yeşil */
-
-    --news-size:1rem;
-    --news-weight:700;
-    --chat-size:15px;
-    --chat-weight:500;
-    --content-size:15px; /* YENİ: Haber içerik yazı boyutu */
-    --content-line-height:1.6; /* YENİ: Satır yüksekliği */
-}
-
-:root {
-    /* Açık tema buton renkleri */
-    --btn-bg-light: rgba(0,0,0,0.05);
-    --btn-bg-size: rgba(239,68,68,0.1);    /* Y+ Y- için kırmızımsı */
-    --btn-bg-weight: rgba(59,130,246,0.1);  /* K+ K- için mavimsi */
-    --btn-bg-content: rgba(34,197,94,0.1);  /* İ+ İ- için yeşilimsi */
-    --btn-text: #1d1d1f;
-    --btn-hover: rgba(0,0,0,0.1);
-	
-	--size-color: #ef4444;    /* Kırmızı */
-    --weight-color: #3b82f6;   /* Mavi */
-    --content-color: #22c55e;  /* Yeşil */
-	
-}
-
-/* Haber içerik stilleri */
-.modal-body h2 {
-    font-size: calc(var(--content-size) + 0.4rem) !important;
-    line-height: var(--content-line-height) !important;
-}
-
-#dynamicContent p,
-.modal-body p {
-    font-size: var(--content-size) !important;
-    line-height: var(--content-line-height) !important;
-}
-
-.modal-body .news-meta,
-.modal-body [style*="background:#ef4444"] {
-    font-size: calc(var(--content-size) - 2px) !important;
-}
-
-[data-theme="dark"] {
-    --bg:#000;
-    --text:#f5f5f7;
-	--muted:#8e8e93;
-    --card-bg:#1c1c1e;
-    --brd:#2c2c2e;
-    --header-bg:rgba(0,0,0,0.85);
-	
-	   --size-color: #ff6b6b;     /* Açık kırmızı */
-    --weight-color: #6b9eff;    /* Açık mavi */
-    --content-color: #6bff6b;   /* Açık yeşil */
-}
-
-/* ========= RESET ========= */
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
-    -webkit-tap-highlight-color:transparent;
-}
-
-body{
-    background:var(--bg);
-    color:var(--text);
-    height:100vh;
-    overflow:hidden;
-}
-
-/* ========= HEADER ========= */
-.header{
-    position:fixed;
-    top:0;
-    width:100%;
-    height:70px;
-    background:var(--header-bg);
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
-    border-bottom:1px solid var(--brd);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:0 16px;
-    z-index:1001;
-}
-
-.header-left,.header-right{
-    display:flex;
-    gap:8px;
-    flex:1;
-}
-
-.header-right{justify-content:flex-end;}
-.header-center{text-align:center;flex:1.5;}
-
-.time-text{
-    font-size:1.3rem;
-    font-weight:600;
-}
-
-.date-text{
-    font-size:0.7rem;
-    color:var(--muted);
-    font-weight:500;
-}
-
-/* ========= ICON BUTON ========= */
-
-/* Kaydedilmiş buton stili - KALICI YEŞİL */
-.btn-icon.saved {
-    background: #28a745;
-    color: white ;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
-    
-}
-
-.btn-icon.saved:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.7);
-}
-
-/* Rozet animasyonu */
-#savedBadge {
-    animation: badgePop 0.3s ease;
-}
-
-
-.btn-icon.saved::after {
-    content: '✓';
-    position: absolute;
-    top: -2px;
-    right: -2px;
-    font-size: 10px;
-    background: white;
-    color: #22c55e;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    border: 1px solid #22c55e;
-}
-
-/* Alternatif: Sadece yeşil çerçeve */
-.btn-icon.saved-outline {
-    border: 2px solid #22c55e !important;
-    box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
-    position: relative;
-}
-
-/* Kayıtlı haber rozeti (kaydedilenler butonu için) */
-.btn-save.has-saved {
-    position: relative;
-}
-
-.btn-save.has-saved::after {
-    content: attr(data-count);
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #ef4444;
-    color: white;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 12px;
-    min-width: 18px;
-    text-align: center;
-}
-
-
-.btn-icon{
-    width:38px;
-    height:38px;
-    border-radius:50%;
-    border:none;
-    background: var(--btn-bg-light);
-    cursor:pointer;
-    font-size:1.1rem;
-    transition: all 0.2s ease;
-	color: var(--btn-text);
-}
-
-.btn-icon.size-btn {
-    background: color-mix(in srgb, var(--size-color) 20%, transparent);
-    color:  var(--size-color);
-	border: 1px solid color-mix(in srgb, var(--size-color) 30%, transparent);
-}
-
-.btn-icon.weight-btn {
-  background: color-mix(in srgb, var(--weight-color) 20%, transparent);
-    color: var(--weight-color);
-    border: 1px solid color-mix(in srgb, var(--weight-color) 30%, transparent);
-}
-
-.btn-icon.content-btn {
-    background: color-mix(in srgb, var(--content-color) 20%, transparent);
-    color: var(--content-color);
-    border: 1px solid color-mix(in srgb, var(--content-color) 30%, transparent);
-}
-
-.btn-icon:hover {
-    background: var(--btn-hover) !important;
-    transform: scale(1.05);
-}
-
-@keyframes badgePop {
-    0% { transform: scale(0); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-
-[data-theme="dark"] .btn-icon:hover{
-    background:rgba(255,255,255,0.08);
-}
-
-.btn-gemini{background:var(--primary)!important;color:#fff!important;border:none!important;}
-.btn-save{background:var(--primary)!important;color:#fff!important;border:none!important;}
-
-/* ========= CATEGORY BAR ========= */
-.category-bar{
-    position:fixed;
-    top:70px;
-    width:100%;
-    display:flex;
-    gap:10px;
-    padding:10px 16px;
-    overflow-x:auto;
-    background:var(--bg);
-    border-bottom:1px solid var(--brd);
-    z-index:1000;
-}
-
-.category-bar::-webkit-scrollbar{display:none;}
-
-.cat-item{
-    font-size:0.8rem;
-    font-weight:600;
-    padding:6px 14px;
-    border-radius:20px;
-    background:#ededf0;
-    color:#000;
-    white-space:nowrap;
-    cursor:pointer;
-    transition:.2s ease;
-}
-
-[data-theme="dark"] .cat-item.active {
-    background: var(--primary) !important;
-    color: white !important;
-}
-
-.cat-item.active{
-    background:var(--primary);
-    color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-[data-theme="dark"] .cat-item{
-    background:#2c2c2e;
-    color:#fff;
-}
-
-/* Koyu temada saved butonu */
-[data-theme="dark"] .btn-icon.saved {
-    background: #22c55e !important;
-    color: white !important;
-	box-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
-}
-
-/* ========= NEWS FEED ========= */
-#newsFeed{
-    margin-top:125px !important;
-    height:calc(100vh - 125px);
-    overflow-y:auto;
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:20px;
-    padding-bottom:120px !important;
-}
-
-/* ========= NEWS CARD ========= */
-.news-card{
-    background:var(--card-bg);
-    border-radius:24px;  /* 20px'den 24px'e çıktı */
-    padding:18px;        /* 14px'den 18px'e çıktı */
-    display:flex;
-	flex-direction: column-reverse;
-    gap:18px;            /* 14px'den 18px'e çıktı */
-    border:1px solid var(--brd);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.3s ease;
-    margin-bottom:16px;  /* Kartlar arası boşluk eklendi */
-}
-
-.news-card:active {
-    transform: scale(0.99);
-}
-
-.news-card:hover{
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.btn-icon {
- width: 36px;
-    height: 36px;
-    background: rgba(0, 0, 0, 0.05);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-}
-.btn-icon:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-	background: rgba(0, 0, 0, 0.1);
-}
-
-.news-card img{
-    width:100%;         /* 95px'den 120px'e çıktı */
-    height:230px;        /* 95px'den 120px'e çıktı */
-    border-radius:18px;  /* 14px'den 18px'e çıktı */
-    object-fit:cover;
-}
-
-.news-title{
-    font-size:var(--news-size)!important;
-    font-weight:var(--news-weight)!important;
-    line-height:1.4;     /* 1.35'den 1.4'e çıktı */
-    margin-top:4px;      /* Başlık için üst boşluk */
-}
-
-.news-meta{
-    font-size:0.75rem;    /* 0.7rem'den 0.8rem'e çıktı */
-    color:var(--muted);
-    font-weight:600;
-    margin-bottom:8px;   /* 6px'den 8px'e çıktı */
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
-
-.news-source-badge {
-    background:var(--primary);
-    color:white;
-    padding:4px 10px;
-    border-radius:20px;
-    font-size:0.7rem;
-    font-weight:700;
-}
-
-.news-date-badge {
-    background:rgba(255,255,255,0.1);
-    padding:4px 8px;
-    border-radius:12px;
-    font-size:0.65rem;
-}
-
-/* ========= ALT ARAMA BAR ========= */
-.bottom-banner{
-    position:fixed;
-    bottom:0;
-    width:100%;
-    display:flex;
-    gap:10px;
-    padding:12px 16px;
-    background:var(--header-bg);
-    backdrop-filter:blur(20px);
-    border-top:1px solid var(--brd);
-    z-index:2000;
-}
-
-.bottom-banner input{
-    flex:1;
-    padding:12px 16px;
-    border-radius:22px;
-    border:1px solid var(--brd);
-    background:#f2f2f7;
-    font-size:14px;
-}
-
-[data-theme="dark"] .bottom-banner input{
-    background:#2c2c2e;
-    color:#fff;
-}
-
-.bottom-banner button{
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    border:none;
-    background:var(--primary);
-    color:#fff;
-    font-size:1rem;
-    cursor:pointer;
-}
-
-/* ========= MODAL ========= */
-
-.overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.4);
-    backdrop-filter:blur(10px);
-    display:none;
-    z-index:5000;
-    justify-content:center;
-    align-items:flex-end;
-}
-
-.modal{
-    width:100% !important;
-    height:92vh !important;
-    background:var(--bg);
-    border-radius: 0px 0px 0 0;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-}
-
-.modal-header{
-    padding:18px;
-    border-bottom:1px solid var(--brd);
-}
-
-/* Haber detay üst butonları için düzenleme */
-.modal-header .btn-icon {
-    width: 28px !important;  /* Daha küçük butonlar */
-    height: 28px !important;
-    font-size: 0.9rem !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.modal-header .btn-icon-group {
-    display: flex;
-    align-items: center;
-    gap: 2px;  /* Butonlar arası minimum boşluk */
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
-
-.modal-header .btn-icon-divider {
-    width: 1px;
-    height: 20px;
-    background: var(--brd);
-    margin: 0 2px;
-}
-
-/* Mobil için ek düzenleme */
-@media (max-width: 480px) {
-    .modal-header .btn-icon {
-        width: 26px !important;
-        height: 26px !important;
-        font-size: 0.85rem !important;
-    }
-    
-    .modal-header h2 {
-        font-size: 0.9rem !important;
-    }
-}
-
-.modal-body{
-    flex:1;
-    overflow-y:auto;
-    padding:18px;
-}
-
-.modal-footer{
-    padding:14px;
-    border-top:1px solid var(--brd);
-}
-
-/* ========= CHAT ========= */
-.chat-box{
-    background:var(--card-bg);
-    border-radius:0px;
-    padding:3px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
-
-.msg{
-    padding:12px 36px;
-    border-radius:2px;
-    font-size:var(--chat-size);
-    font-weight:var(--chat-weight);
-    
-}
-
-.msg.user{
-    background:var(--primary);
-    color:#fff;
-    align-self:flex-end;
-}
-
-.msg.ai{
-    background:#ededf0;
-	border-radius: 2px 2px 2px 0px;
-}
-
-[data-theme="dark"] .msg.ai{
-    background:#2c2c2e;
-}
-
-@media (max-width: 480px) {
-    .news-card {
-        padding: 12px;
-        gap: 12px;
-    }
-    .news-card img {
-        height: 180px;
-    }
-}
-
-
-/* ========= FULL BUTTON ========= */
-.btn-full{
-    width:100%;
-    padding:14px;
-    border-radius:20px;
-    border:none;
-    background:var(--primary);
-    color:#fff;
-    font-weight:600;
-    cursor:pointer;
-}
-
-/* ========= TOAST ========= */
-#toast{
-    position:fixed;
-    top:20px;
-    left:50%;
-    transform:translateX(-50%);
-    background:var(--card-bg);
-    color:var(--text);
-    padding:10px 20px;
-    border-radius:20px;
-    border:1px solid var(--brd);
-    font-weight:600;
-    z-index:9999;
-}
-
-/* Yazıyor animasyonu için stiller */
-.typing-indicator {
-    display: flex;
-    gap: 4px;
-    padding: 12px 16px;
-    background: #e9e9eb;
-    border-radius: 8px;
-    width: fit-content;
-    margin: 8px 0;
-}
-
-[data-theme="dark"] .typing-indicator {
-    background: #2c2c2e;
-}
-
-.typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background: #888;
-    border-radius: 50%;
-    animation: typingBounce 1.4s infinite ease-in-out;
-}
-
-.typing-indicator span:nth-child(1) { animation-delay: 0s; }
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typingBounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
-    30% { transform: translateY(-10px); opacity: 1; }
-}
-
-/* ⚙️ AYARLAR PANELİ iOS TARZI */
-/* ============================= */
-
-.set-row{
-    margin-bottom:20px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
-
-.set-label{
-    font-size:0.75rem;
-    font-weight:600;
-    color:var(--text);
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-}
-
-.set-ctrl{
-    display:flex;
-    align-items:center;
-    background:rgba(255,255,255,0.8);
-    border:1px solid rgba(60,60,67,0.3);
-    border-radius:16px;
-    height:55px;
-    overflow:hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    backdrop-filter: blur(10px);
-    transition: 0.2s ease;
-    color:black;
-}
-
-.set-ctrl button{
-    flex:1;
-    height:100%;
-    border:none;
-    background:transparent;
-    font-size:1.4rem;
-    font-weight:600;
-    cursor:pointer;
-    transition:.2s ease, transform .15s ease;
-    color:black;
-    border-radius: 16px;
-}
-
-.set-ctrl button:hover{
-    background:rgba(0,0,0,0.05);
-    transform: scale(0.98);
-    color:black;
-}
-
-[data-theme="dark"] .set-ctrl button{
-    color:black;
-}
-
-[data-theme="dark"] .set-ctrl button:hover{
-    background:rgba(255,255,255,0.08);color:black;
-}
-
-.set-ctrl span{
-    flex:2;
-    text-align:center;
-    font-weight:600;
-    font-size:0.95rem;
-    border-left:1px solid rgba(60,60,67,0.3);
-    border-right:1px solid rgba(60,60,67,0.3);
-    color:#1c1c1e;
-}
-
-[data-theme="dark"] .set-ctrl span{
-    color:black;
-}
-
-/* Input stilini güncelle */
-.modal-footer textarea {
-    flex: 1;
-    padding: 14px;
-    border-radius: 12px;
-    border: 2px solid var(--brd);
-    background: var(--bg);
-    color: var(--text);
-    font-size: 16px;
-    resize: none;
-    min-height: 50px;
-    max-height: 120px;
-    overflow-y: auto;
-    font-family: inherit;
-}
-
-/* Yazıyor animasyonu için stiller */
-.typing-indicator {
-    display: flex;
-    gap: 4px;
-    padding: 12px 16px;
-    background: #e9e9eb;
-    border-radius: 20px;
-    width: fit-content;
-    margin: 8px 0;
-}
-
-[data-theme="dark"] .typing-indicator {
-    background: #2c2c2e;
-}
-
-.typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background: #888;
-    border-radius: 50%;
-    display: inline-block;
-    animation: typingBounce 1.4s infinite ease-in-out;
-}
-
-.typing-indicator span:nth-child(1) { animation-delay: 0s; }
-.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes typingBounce {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
-    30% { transform: translateY(-10px); opacity: 1; }
-}
-
-.chat-box {
-    scroll-behavior: smooth;
-    overflow-y: auto !important;
-}
-
-/* Tam ekran sohbet modu */
-.modal.fullscreen-chat {
-    width: 100% !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
-    background: var(--bg);
-}
-
-.modal.fullscreen-chat .modal-body {
-    padding: 0 !important;
-    height: calc(100vh - 130px) !important; /* Header ve footer yüksekliğine göre ayarla */
-    overflow: hidden !important;
-}
-
-.modal.fullscreen-chat .chat-box {
-    border: none !important;
-    border-radius: 0 !important;
-    min-height: 100% !important;
-    max-height: 100% !important;
-    background: transparent !important;
-    padding: 15px !important;
-}
-
-.modal.fullscreen-chat .modal-footer {
-    background: var(--header-bg);
-    backdrop-filter: blur(20px);
-    border-top: 1px solid var(--brd);
-    padding: 12px 16px !important;
-}
-
-.modal.fullscreen-chat .modal-header {
-    background: var(--header-bg);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--brd);
-}
-
-.modal.fullscreen-chat .news-meta,
-.modal.fullscreen-chat h2,
-.modal.fullscreen-chat img:not(.chat-box img) {
-    display: none !important;
-}
-
-/* Sohbet mesajları için tam genişlik */
-.modal.fullscreen-chat .chat-box .msg {
-    max-width: 100%;
-    margin-bottom: 12px;
-}
-
-/* Nokta animasyonu */
-.dot-animation {
-    display: inline-block;
-    animation: dotPulse 1.5s infinite;
-}
-
-@keyframes dotPulse {
-    0% { opacity: 0.2; }
-    20% { opacity: 1; }
-    100% { opacity: 0.2; }
-}
-
-/* Çoklu resim galerisi */
-.multi-image-gallery {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 5px 0 15px 0;
-    margin-bottom: 20px;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
-}
-
-.multi-image-gallery::-webkit-scrollbar {
-    height: 4px;
-}
-
-.multi-image-gallery::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-.gallery-thumb {
-    flex: 0 0 auto;
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    object-fit: cover;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
-    opacity: 0.8;
-}
-
-.gallery-thumb:hover,
-.gallery-thumb:active {
-    opacity: 1;
-    border-color: var(--primary);
-    transform: scale(1.05);
-}
-
-.gallery-thumb.active {
-    opacity: 1;
-    border-color: var(--primary);
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-}
-
-/* Ana resim */
-.main-image {
-    width: 100%;
-    border-radius: 15px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    max-height: 300px;
-    object-fit: cover;
-}
-
-/* Resim görüntüleyici - güncel versiyon */
-.image-viewer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 10000;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.2s ease;
-}
-
-.image-viewer.show {
-    display: flex;
-}
-
-.image-viewer .gallery-container {
-    position: relative;
-    width: 90%;
-    height: 80%;  /* Ekranın %80'i kadar yükseklik */
-    max-width: 1200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: rgba(20, 20, 20, 0.3);
-    border-radius: 24px;
-    padding: 10px;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.image-viewer .main-viewer-image {
-    max-width: 100%;
-    max-height: 70vh;  /* Ekran yüksekliğinin %70'i */
-    object-fit: contain;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    animation: zoomIn 0.2s ease;
-    cursor: grab;
-    transition: transform 0.1s ease;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-.image-viewer .main-viewer-image:active {
-    cursor: grabbing;
-}
-
-/* Yakınlaştırma için gerekli */
-.image-viewer .main-viewer-image.zoomed {
-    transform: scale(var(--zoom-scale, 1.5));
-}
-
-/* Alt küçük resim şeridi */
-.image-viewer .thumbnail-strip {
-    position: absolute;
-    bottom: -60px;  /* Container'ın dışında */
-    left: 0;
-    right: 0;
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 30px;
-    margin: 10px auto;
-    width: fit-content;
-    max-width: 90%;
-    scrollbar-width: thin;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.image-viewer .thumbnail-strip::-webkit-scrollbar {
-    height: 4px;
-}
-
-.image-viewer .thumbnail-strip::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 10px;
-}
-
-.image-viewer .thumb-img {
-    flex: 0 0 auto;
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
-    object-fit: cover;
-    cursor: pointer;
-    border: 2px solid transparent;
-    opacity: 0.7;
-    transition: all 0.2s ease;
-}
-
-.image-viewer .thumb-img:hover,
-.image-viewer .thumb-img.active {
-    opacity: 1;
-    border-color: var(--primary);
-    transform: scale(1.05);
-}
-
-/* Navigasyon butonları - container içinde */
-.image-viewer .nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 10001;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.image-viewer .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-50%) scale(1.1);
-}
-
-.image-viewer .nav-btn.prev {
-    left: 10px;
-}
-
-
-.image-viewer .nav-btn.next {
-    right: 10px;
-}
-
-/* Sayaç */
-.image-viewer .counter {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    z-index: 10001;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* İndirme butonu */
-.image-viewer .download-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;  /* Sağda kalsın */
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 1.2rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 10001;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* Kapatma ipucu */
-.image-viewer .close-hint {
-    position: absolute;
-    bottom: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 30px;
-    font-size: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    white-space: nowrap;
-}
-
-/* Kapat butonu */
-.image-viewer .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 60px;  /* Download butonunun yanında */
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(255, 59, 48, 0.8);  /* Kırmızımsı */
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    font-size: 1.2rem;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    z-index: 10001;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.image-viewer .close-btn:hover,
-.image-viewer .close-btn:active {
-    background: rgb(255, 59, 48);
-    transform: scale(1.1);
-}
-
-/* Animasyonlar */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes zoomIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
-
-/* ========= SIRALAMA MENÜSÜ ========= */
-.sort-menu {
-    position: fixed;
-    top: 70px;
-    right: 16px;
-    background: var(--card-bg);
-    border: 1px solid var(--brd);
-    border-radius: 16px;
-    padding: 8px;
-    z-index: 2000;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    min-width: 200px;
-    display: none;
-}
-
-.sort-menu.show {
-    display: block;
-    animation: slideDown 0.2s ease;
-}
-
-.sort-item {
-    padding: 12px 16px;
-    border-radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: background 0.2s;
-    color: var(--text);
-}
-
-.sort-item:hover {
-    background: rgba(239, 68, 68, 0.1);
-}
-
-.sort-item.active {
-    background: rgba(239, 68, 68, 0.2);
-    color: var(--primary);
-    font-weight: 600;
-}
-
-.sort-item span:first-child {
-    font-size: 1.2rem;
-}
-
-.sort-icon {
-    margin-left: auto;
-    color: var(--primary);
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Sıralama butonu aktifken */
-.btn-sort.active {
-    background: var(--primary) !important;
-    color: white !important;
-}
-
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>📱 RESİMLİ NOTLAR</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+body { background-color: #faf9f6; min-height: 100vh; padding-bottom: 20px; font-size: 13px; }
+h1, h2, h3, p, span, button, input, textarea { font-weight: 700 !important; letter-spacing: 0.3px; }
+button {
+    border: none; border-radius: 30px; padding: 8px 10px; font-size: 10px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: all 0.1s ease; border: 2px solid transparent;
+}
+button:active { transform: scale(0.97); }
+.btn-mavi { background-color: #2b7be4; color: white; }
+.btn-kirmizi { background-color: #dc3545; color: white; }
+
+.sabit-banner {
+    position: sticky; top: 0; left: 0; width: 100%; background-color: #faf9f6;
+    padding: 2px 5px 3px 10px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 3px solid #2b7be4; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.banner-geri, .banner-sil {
+    background: none; box-shadow: none; padding: 2px 6px !important; font-size: 18px !important;
+    border: 1px solid; background-color: white;
+}
+.banner-geri { color: #2b7be4; border-color: #2b7be4; }
+.banner-sil { color: #dc3545; border-color: #dc3545; }
+.banner-tarih {
+    font-size: 8px; background-color: white; padding: 1px 14px; border-radius: 50px;
+    border: 1px solid #2b7be4; text-align: center; max-width: 200px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; display: flex; flex-direction: column; line-height: 1.3;
+}
+.tarih-etiket { font-size: 8px; color: #2b7be4; letter-spacing: 0.5px; }
+.tarih-deger { font-size: 10px; }
+
+.ana-icerik { padding: 12px; }
+.arama-kutusu {
+    width: 100%; padding: 6px 18px; font-size: 13px; border: 3px solid #ddd;
+    border-radius: 50px; margin-bottom: 20px; background-color: white;
+}
+.baslik-item {
+    background-color: white; padding: 14px 22px; margin-bottom: 10px; border-radius: 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.03); border: 2px solid #eee; font-size: 12px;
+}
+.baslik-item span { cursor: pointer; flex: 1; }
+
+.detay-icerik { padding: 16px; margin-top: 10px; }
+.detay-kart {
+    background-color: white; border-radius: 40px; padding: 20px; margin-bottom: 20px;
+    border: 3px solid #e0e0e0; box-shadow: 0 6px 12px rgba(0,0,0,0.02);
+}
+.kart-baslik {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px;
+    color: #2b7be4; border-bottom: 2px dashed #2b7be4; padding-bottom: 8px;
+}
+.kart-baslik button {
+    background: none; box-shadow: none; padding: 0 !important; font-size: 16px !important;
+    min-width: auto; border: none; color: #2b7be4;
+}
+.baslik-metin { font-size: 13px; font-weight: 700; word-break: break-word; }
+.baslik-input {
+    font-size: 12px; padding: 8px 15px; border: 3px solid #2b7be4;
+    border-radius: 30px; width: 100%; margin-bottom: 15px;
+}
+.aciklama-kutu {
+    background-color: #f5f5f5; border: none; border-radius: 40px; padding: 24px;
+    font-size: 17px; min-height: 120px; white-space: pre-wrap;
+}
+.resim-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px; margin-top: 10px;
+}
+.resim-kart {
+    position: relative; aspect-ratio: 1 / 1; border-radius: 20px; overflow: hidden;
+    border: 3px solid #2b7be4; background-color: #f0f0f0;
+}
+.resim-kart img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+
+.modal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.98); z-index: 2000; justify-content: center;
+    align-items: center; flex-direction: column; padding: 10px;
+}
+.modal.aktif { display: flex; }
+.galeri-resim-kapsayici {
+    width: 100%; height: 80vh; display: flex; justify-content: center;
+    align-items: center; overflow: auto; -webkit-overflow-scrolling: touch;
+}
+.galeri-resim {
+    max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;
+    cursor: zoom-in; -webkit-user-select: none; user-select: none;
+    touch-action: pan-x pan-y pinch-zoom; will-change: transform;
+}
+.galeri-kontrol {
+    position: fixed; bottom: 0; left: 0; width: 100%; display: flex; gap: 12px;
+    justify-content: center; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+    padding: 12px 16px; border-top-left-radius: 30px; border-top-right-radius: 30px;
+    z-index: 2100; transition: opacity 0.2s;
+}
+.galeri-kontrol button {
+    padding: 5px 8px !important; font-size: 10px !important; min-width: 50px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.onay-modal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background-color: white; border-radius: 40px; padding: 20px; z-index: 3000;
+    border: 4px solid #2b7be4; max-width: 90%; width: 320px; text-align: center; display: none;
+}
+.onay-modal.aktif { display: block; }
+.onay-modal h3 { font-size: 16px; margin-bottom: 20px; }
+.onay-butonlar { display: flex; gap: 10px; justify-content: center; }
+.onay-butonlar button { padding: 6px 14px !important; font-size: 14px !important; }
+
+.secenek-modal {
+    position: fixed; bottom: 0; left: 0; width: 100%; background-color: white;
+    border-top-left-radius: 40px; border-top-right-radius: 40px; padding: 18px 10px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.2); z-index: 2000;
+    display: none; flex-direction: column; gap: 10px;
+}
+.secenek-modal.aktif { display: flex; }
+.sayfa { display: none; }
+.sayfa.aktif { display: block; }
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Açıklama düzenleme alanı normal yazı stili */
+#aciklamaInput {
+    font-weight: normal !important;
+}
+</style>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Resimli Notlar">
+<meta name="theme-color" content="#2b7be4">
 </head>
-<body>   
+<body>
 
-  <header class="header">
-    <div class="header-left">
-        <button class="btn-icon" onclick="openSettings()">⚙️</button>
-        <button class="btn-icon" id="themeBtn" onclick="toggleTheme()">🌙</button>
-    </div>
-    <div class="header-center">
-        <span class="time-text" id="clk">00:00</span>
-        <span class="date-text" id="dt">YÜKLENİYOR</span>
-    </div>
-    <div class="header-right">
-        <button class="btn-icon btn-sort" onclick="openSortMenu()" title="Sıralama" id="sortBtn">🔽</button>
-        <button class="btn-icon btn-gemini" onclick="openGeneralChat()">✨</button>
-        <button class="btn-icon btn-save" onclick="openSavedList()">💾</button>
-        <button class="btn-icon" onclick="softRefresh()">🔄</button>
-    </div>
-</header>
-
-<div class="category-bar" id="catBar">
-    <div class="cat-item active" onclick="filterCat('TÜMÜ')">TÜMÜ</div>
-    <div class="cat-item" onclick="filterCat('TÜRKİYE')">TÜRKİYE</div>
-    <div class="cat-item" onclick="filterCat('DÜNYA')">DÜNYA</div>
-    <div class="cat-item" onclick="filterCat('GÜNDEM')">GÜNDEM</div>
-    <div class="cat-item" onclick="filterCat('TEKNOLOJİ')">TEKNOLOJİ</div>
-    <div class="cat-item" onclick="filterCat('SPOR')">SPOR</div>
-    <div class="cat-item" onclick="filterCat('OTOMOBİL')">OTOMOBİL</div>
-    <!-- 🆕 YENİ: DİĞER KATEGORİSİ -->
-    <div class="cat-item" onclick="filterCat('DİĞER')">DİĞER</div>
-</div>
-
-    <main id="newsFeed"></main>
-    <div class="overlay" id="ovl"><div class="modal" id="mdl"></div></div>
-
-  <!-- Yeni Alt Banner -->
-    <div class="bottom-banner">
-        <input type="text" id="mainInp" placeholder="Sohbet et veya *haber ara*..." 
-               onkeypress="if(event.key==='Enter') handleMainInput()">
-        <button onclick="handleMainInput()">➤</button>
-    </div>
-	
-  <!-- Resim <!-- Resim Görüntüleyici - güncel HTML -->
-<div class="image-viewer" id="imageViewer" onclick="closeImageViewer(event)">
-    <div class="gallery-container">
-        <!-- Kapat butonu (sağ üstte) -->
-        <button class="close-btn" onclick="closeViewer(); event.stopPropagation();" title="Kapat">✕</button>
-        
-        <!-- Önceki buton -->
-        <button class="nav-btn prev" id="prevImageBtn" onclick="navigateGallery(-1); event.stopPropagation();">◀</button>
-        
-        <!-- Ana resim -->
-        <img id="viewerImage" class="main-viewer-image" src="" alt="Haber Resmi" draggable="false">
-        
-        <!-- Sonraki buton -->
-        <button class="nav-btn next" id="nextImageBtn" onclick="navigateGallery(1); event.stopPropagation();">▶</button>
-        
-        <!-- Sayaç -->
-        <div class="counter" id="imageCounter">1/1</div>
-        
-        <!-- İndirme butonu -->
-        <button class="download-btn" id="downloadImageBtn" onclick="downloadCurrentImage(event)" title="Resmi Kaydet">⬇️</button>
-        
-        <!-- Alt küçük resimler -->
-        <div class="thumbnail-strip" id="thumbnailStrip"></div>
-        
-        <!-- Kapatma ipucu -->
-        <div class="close-hint">⬅️ Resmin dışına tıkla veya ESC'ye bas</div>
+<!-- ANA SAYFA -->
+<div id="anaSayfa" class="sayfa aktif">
+    <div class="ana-icerik">
+        <input type="text" id="aramaInput" class="arama-kutusu" placeholder="🔍 Parça adı..." autocomplete="off">
+        <div style="margin-bottom: 25px;">
+            <button class="btn-mavi" id="yeniEkleBtn" style="width: 100%;">➕ Yeni Parça Ekle</button>
+        </div>
+        <div id="baslikListesi" style="margin-bottom: 100px;"></div>
     </div>
 </div>
 
-
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-<script>
-
-// ========================================
-// ANDROID GERİ TUŞU - PWA FIX
-// ========================================
-
-// 1. Sayfa yüklenince hemen bir history girişi ekle
-history.pushState({ _guard: true }, '', '');
-
-// 2. Geri tuşu yakalama
-window.addEventListener('popstate', function(e) {
-    const ovl = document.getElementById('ovl');
-    const viewer = document.getElementById('imageViewer');
-    const sortMenu = document.getElementById('sortMenu');
-
-    // Resim görüntüleyici açıksa kapat
-    if (viewer && viewer.classList.contains('show')) {
-        viewer.classList.remove('show');
-        // Modal da açıksa tekrar koruma ekle
-        if (ovl && ovl.style.display === 'flex') {
-            history.pushState({ _guard: true }, '', '');
-        }
-        return;
-    }
-
-    // Sıralama menüsü açıksa kapat
-    if (sortMenu && sortMenu.classList.contains('show')) {
-        sortMenu.classList.remove('show');
-        document.getElementById('sortBtn')?.classList.remove('active');
-        sortMenu.remove();
-        history.pushState({ _guard: true }, '', '');
-        return;
-    }
-
-    // Modal açıksa kapat
-    if (ovl && ovl.style.display === 'flex') {
-        ovl.style.display = 'none';
-        active = null;
-        activeSearchQuery = null;
-        return;
-    }
-
-    // Hiçbir şey açık değil → çıkma, geri koruma ekle
-    history.pushState({ _guard: true }, '', '');
-});
-
-// 3. closeM fonksiyonunu patch'le
-const _oldCloseM = closeM;
-closeM = function() {
-    ovl.style.display = 'none';
-    active = null;
-    activeSearchQuery = null;
-    // History'den bir geri al (pushState ile eklediğimiz guard'ı)
-    // Ama popstate tetiklenmesin diye replaceState kullan
-    history.replaceState({ _guard: true }, '', '');
-};
-
-// 4. closeImageViewer fonksiyonunu patch'le
-const _oldCloseViewer = closeViewer;
-closeViewer = function() {
-    const viewer = document.getElementById('imageViewer');
-    if (viewer) viewer.classList.remove('show');
-};
-
-// 5. Her modal açılışında history'ye guard ekle
-const _oldOpenDetail = openDetail;
-openDetail = function(idx) {
-    _oldOpenDetail(idx);
-    history.pushState({ _guard: true }, '', '');
-};
-
-const _oldOpenGeneralChat = openGeneralChat;
-openGeneralChat = function() {
-    _oldOpenGeneralChat();
-    history.pushState({ _guard: true }, '', '');
-};
-
-const _oldOpenSettings = openSettings;
-openSettings = function() {
-    _oldOpenSettings();
-    history.pushState({ _guard: true }, '', '');
-};
-
-const _oldOpenRSSManager = openRSSManager;
-openRSSManager = function() {
-    _oldOpenRSSManager();
-    history.pushState({ _guard: true }, '', '');
-};
-
-const _oldOpenAddRSS = openAddRSS;
-openAddRSS = function() {
-    _oldOpenAddRSS();
-    history.pushState({ _guard: true }, '', '');
-};
-
-const _oldEditRSS = editRSS;
-editRSS = function(key) {
-    _oldEditRSS(key);
-    history.pushState({ _guard: true }, '', '');
-};
-
-const _oldConfirmDeleteRSS = confirmDeleteRSS;
-confirmDeleteRSS = function(key) {
-    _oldConfirmDeleteRSS(key);
-    history.pushState({ _guard: true }, '', '');
-};
-
-const _oldOpenGallery = openGallery;
-openGallery = function(images, startIndex) {
-    _oldOpenGallery(images, startIndex);
-    history.pushState({ _guard: true }, '', '');
-};
-
-// 6. openSavedList varsa onu da sar
-if (typeof openSavedList === 'function') {
-    const _oldOpenSavedList = openSavedList;
-    openSavedList = function() {
-        _oldOpenSavedList();
-        history.pushState({ _guard: true }, '', '');
-    };
-}
-
-
-// --- 1. SİSTEM AYARLARI ---
-// GEMINI API - Bunu kendi anahtarınla değiştir
-// Gemini 2.0 Flash + Google Search Grounding + Hafıza + API Güvenliği
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-const ENCRYPTED_KEY = 'A*I*z*a*S*y*B*q*g*H*x*_*Z*3*s*g*c*6*-*t*L*G*V*F*d*1*9*F*3*b*7*c*n*G*h*7*Y*U*U'; // Senin anahtarın *'lı
-
-
-const fbCfg = { 
-    apiKey: "AIzaSyBr57bmspJo8r_4IdkBNI_DhULYf0ynCQs", 
-    databaseURL: "https://gen-lang-client-0253857481-default-rtdb.firebaseio.com", 
-    projectId: "gen-lang-client-0253857481" 
-};
-
-if (!firebase.apps.length) firebase.initializeApp(fbCfg);
-const db = firebase.database();
-
-// 1. Ayarları yükle, yoksa varsayılanları kur
-let sets = JSON.parse(localStorage.getItem('khoj_sets')) || { size: 13, weight: 600, speed: 20, newsLimit: 10 };
-
-// 2. Başlangıç sayacını ayardan çek
-let visibleCount = sets.newsLimit || 10;
-let chatHistory = JSON.parse(localStorage.getItem('khoj_ai_history')) || [];
-let news = [];
-let active = null;
-let activeSearchQuery = null;
-let autoScrollEnabled = true; // Otomatik kaydırma kontrolü
-
-let currentNewsLimit = parseInt(localStorage.getItem('news_limit')) || 10;
-let displayedNewsCount = {};
-let allCachedNews = JSON.parse(localStorage.getItem('khoj_cache')) || {};
-
-function softRefresh() {
-    showToast("🔄 Yeni haberler getiriliyor...");
-    
-    // Önbelleği temizle (1 saat beklemesin diye)
-    localStorage.removeItem('khoj_news_cache');
-    localStorage.removeItem('khoj_news_time');
-    
-    // Firebase'den RSS'leri al ve yeni haberleri çek
-    db.ref('rss_ayarlari').once('value', snap => {
-        rssListesi = snap.val() || {};
-        if (Object.keys(rssListesi).length > 0) {
-            // Yeni haberleri çek
-            fetchAllNews().then(() => {
-                showToast("✅ Haberler güncellendi!");
-            });
-        }
-    });
-}
-
-let currentImages = []; // Tüm resimlerin listesi
-let currentImageIndex = 0; // Şu anki resim indeksi
-
-function decryptAPIKey(encrypted) {
-    return encrypted.replace(/\*/g, '');
-}
-
-// Haber detayında resimleri bul
-function extractImagesFromNews(newsItem) {
-    let images = [];
-    
-    // 1. Ana thumbnail varsa ekle
-    if (newsItem.thumbnail && newsItem.thumbnail !== 'logo.png') {
-        images.push(newsItem.thumbnail);
-    }
-    
-    // 2. Açıklamadan resimleri bul
-    if (newsItem.description) {
-        const imgRegex = /<img[^>]+src="([^">]+)"/g;
-        let match;
-        while ((match = imgRegex.exec(newsItem.description)) !== null) {
-            if (!images.includes(match[1])) {
-                images.push(match[1]);
-            }
-        }
-    }
-    
-    // 3. RSS'den gelen diğer resimler (eğer varsa)
-    if (newsItem.images && Array.isArray(newsItem.images)) {
-        newsItem.images.forEach(img => {
-            if (!images.includes(img)) {
-                images.push(img);
-            }
-        });
-    }
-    
-    // Eğer hiç resim yoksa, varsayılan logo
-    if (images.length === 0) {
-        images.push('logo.png');
-    }
-    
-    return images;
-}
-
-// TEMA SİSTEMİ
-function toggleTheme() {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme') || 'light';
-    const next = current === 'light' ? 'dark' : 'light';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('khoj_theme', next);
-    document.getElementById('themeBtn').innerText = next === 'light' ? '🌙' : '☀️';
-    
-    const modal = document.getElementById('ovl');
-    if (modal.style.display === 'flex') {
-        console.log('Tema değişti, modal butonları güncellendi');
-    }
-}
-
-// Tema Hafızası
-(function() {
-    const saved = localStorage.getItem('khoj_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', saved);
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('themeBtn').innerText = saved === 'dark' ? '🌙' : '☀️';
-    });
-})();
-
-function updateTime() {
-    const n = new Date();
-    const clk = document.getElementById('clk');
-    const dt = document.getElementById('dt');
-    if(clk) clk.innerText = n.toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
-    if(dt) dt.innerText = n.toLocaleDateString('tr-TR', {day:'numeric', month:'long'}).toUpperCase();
-}
-setInterval(updateTime, 1000); updateTime(); applySets();
-
-// --- 2.5 SIRALAMA SİSTEMİ ---
-let sortConfig = {
-    type: localStorage.getItem('khoj_sort_type') || 'date', // 'date', 'source', 'title'
-    direction: localStorage.getItem('khoj_sort_dir') || 'desc' // 'asc', 'desc'
-};
-
-// Sıralama menüsünü aç
-function openSortMenu() {
-    // Varolan menüyü kaldır
-    const existingMenu = document.getElementById('sortMenu');
-    if (existingMenu) existingMenu.remove();
-    
-    // Menüyü oluştur
-    const menu = document.createElement('div');
-    menu.id = 'sortMenu';
-    menu.className = 'sort-menu';
-    
-    const sortOptions = [
-        { type: 'date', label: 'Tarihe Göre', icon: '📅', desc: '🔽 Yeniden Eskiye', asc: '🔼 Eskiden Yeniye' },
-        { type: 'source', label: 'Kaynağa Göre', icon: '📰', desc: '🔽 Z\'den A\'ya', asc: '🔼 A\'dan Z\'ye' },
-        { type: 'title', label: 'Başlığa Göre', icon: '📝', desc: '🔽 Z\'den A\'ya', asc: '🔼 A\'dan Z\'ye' }
-    ];
-    
-    let menuHTML = '';
-    sortOptions.forEach(opt => {
-        const isActive = sortConfig.type === opt.type;
-        const currentDir = isActive ? sortConfig.direction : 'desc';
-        
-        menuHTML += `
-            <div class="sort-item ${isActive ? 'active' : ''}" onclick="changeSort('${opt.type}')">
-                <span>${opt.icon}</span>
-                <span style="flex:1;">${opt.label}</span>
-                <span class="sort-icon" onclick="event.stopPropagation(); toggleSortDirection('${opt.type}')">
-                    ${isActive ? (sortConfig.direction === 'desc' ? '🔽' : '🔼') : '🔽'}
-                </span>
+<!-- DETAY SAYFASI -->
+<div id="detaySayfa" class="sayfa">
+    <div class="sabit-banner">
+        <button class="banner-geri" id="bannerGeriBtn">⬅️</button>
+        <div class="banner-tarih" id="bannerTarih">
+            <span class="tarih-etiket">SON GÜNCELLEME</span>
+            <span class="tarih-deger">📅 --</span>
+        </div>
+        <button class="banner-sil" id="bannerSilBtn">🗑️</button>
+    </div>
+    <div class="detay-icerik">
+        <!-- BAŞLIK KARTI -->
+        <div class="detay-kart">
+            <div class="kart-baslik"><span>📌 Parça Adı</span><button id="baslikDuzenleBtn">✏️</button></div>
+            <div>
+                <span class="baslik-metin" id="baslikGoster">PARÇA ADI</span>
+                <div id="baslikDuzenlemeAlani" style="display: none;">
+                    <input type="text" id="baslikInput" class="baslik-input" placeholder="BAŞLIK GİR">
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-mavi" id="baslikKaydet">✅ KAYDET</button>
+                        <button class="btn-kirmizi" id="baslikIptal">❌ İPTAL</button>
+                    </div>
+                </div>
             </div>
-        `;
-    });
-    
-    menu.innerHTML = menuHTML;
-    document.body.appendChild(menu);
-    
-    // Menüyü göster
-    setTimeout(() => menu.classList.add('show'), 10);
-    
-    // Butonu aktif yap
-    const sortBtn = document.getElementById('sortBtn');
-    if (sortBtn) sortBtn.classList.add('active');
-    
-    // Dışarı tıklayınca kapat
-    setTimeout(() => {
-        document.addEventListener('click', function closeSortMenu(e) {
-            if (!menu.contains(e.target) && e.target.id !== 'sortBtn') {
-                menu.classList.remove('show');
-                document.getElementById('sortBtn')?.classList.remove('active');
-                setTimeout(() => menu.remove(), 200);
-                document.removeEventListener('click', closeSortMenu);
-            }
-        });
-    }, 100);
-}
-
-// Sıralama tipini değiştir
-function changeSort(type) {
-    sortConfig.type = type;
-    localStorage.setItem('khoj_sort_type', type);
-    
-    // Menüyü güncelle ve render'ı yenile
-    openSortMenu(); // Menüyü yeniden aç (aktif öğeyi göstermek için)
-    render(); // Haberleri yeniden sırala ve göster
-    
-    showToast(`📊 ${getSortLabel(type)} ile sıralanıyor`);
-}
-
-// Sıralama yönünü değiştir (asc/desc)
-function toggleSortDirection(type) {
-    // Eğer farklı bir tipe tıklandıysa, önce tipi değiştir
-    if (type !== sortConfig.type) {
-        sortConfig.type = type;
-        sortConfig.direction = 'desc'; // Varsayılan
-    } else {
-        // Aynı tip için yönü değiştir
-        sortConfig.direction = sortConfig.direction === 'desc' ? 'asc' : 'desc';
-    }
-    
-    localStorage.setItem('khoj_sort_type', sortConfig.type);
-    localStorage.setItem('khoj_sort_dir', sortConfig.direction);
-    
-    // Menüyü güncelle
-    openSortMenu();
-    render(); // Haberleri yeniden sırala ve göster
-    
-    const dirText = sortConfig.direction === 'desc' ? 'Azalan' : 'Artan';
-    showToast(`📊 ${getSortLabel(sortConfig.type)} (${dirText})`);
-}
-
-// Sıralama etiketini getir
-function getSortLabel(type) {
-    const labels = {
-        'date': 'Tarih',
-        'source': 'Kaynak',
-        'title': 'Başlık'
-    };
-    return labels[type] || type;
-}
-
-// Haberleri sırala (render fonksiyonu içinde kullanılacak)
-function sortNews(newsArray) {
-    return [...newsArray].sort((a, b) => {
-        let comparison = 0;
+        </div>
         
-        switch(sortConfig.type) {
-            case 'date':
-                // Tarihe göre sırala
-                const dateA = a.pubDate ? new Date(a.pubDate).getTime() : 0;
-                const dateB = b.pubDate ? new Date(b.pubDate).getTime() : 0;
-                comparison = dateA - dateB;
-                break;
-                
-            case 'source':
-                // Kaynağa göre sırala
-                comparison = (a.source || '').localeCompare(b.source || '');
-                break;
-                
-            case 'title':
-                // Başlığa göre sırala
-                comparison = (a.title || '').localeCompare(b.title || '');
-                break;
-                
-            default:
-                return 0;
-        }
+        <!-- AÇIKLAMA KARTI -->
+        <div class="detay-kart">
+            <div class="kart-baslik"><span>📝 AÇIKLAMA</span><button id="aciklamaDuzenleBtn">✏️</button></div>
+            <div>
+                <div class="aciklama-kutu" id="aciklamaMetin">AÇIKLAMA</div>
+                <div id="aciklamaDuzenlemeAlani" style="display: none;">
+                    <textarea id="aciklamaInput" rows="4" class="baslik-input" placeholder="AÇIKLAMA GİR" style="min-height: 100px; font-weight: normal;"></textarea>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn-mavi" id="aciklamaKaydet">✅ KAYDET</button>
+                        <button class="btn-kirmizi" id="aciklamaIptal">❌ İPTAL</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        // Yönü uygula (desc: büyükten küçüğe, asc: küçükten büyüğe)
-        return sortConfig.direction === 'desc' ? -comparison : comparison;
-    });
-}
-
-function metniTemizle(hamMetin) {
-    let temiz = hamMetin.replace(/␃🔚␗/g, '').replace(/\{"organic":[\s\S]*?\}\}/g, '').replace(/\{"peopleAlso":[\s\S]*?\}\}/g, '').replace(/"organic":\s*\[[\s\S]*?\]/g, '').replace(/"codeContext":\s*\{[\s\S]*?\}/g, '').replace(/"position":\s*\d+/g, '').replace(/\{.*?\}/g, '');
-    const ilkHarf = temiz.search(/[A-ZİĞÜŞÖÇ]/);
-    if (ilkHarf !== -1) { temiz = temiz.substring(ilkHarf); }
-    temiz = temiz.replace(/[\s\}\]奉",:]{2,}$/g, '');
-    temiz = temiz.replace(/^#{1,6}\s+(.*)$/gm, '<b style="color:#ef4444; font-size:1.1em;">$1</b>');
-    return temiz.replace(/\[\d+\]\(.*?\)/g, '').replace(/\*\*(.*?)\*\*/g, '<b style="color:#ef4444;">$1</b>').replace(/^\s*[\-\*]\s+/gm, '🔹 ').replace(/\n/g, '<br>');
-}
-
-// --- YAZIYOR ANİMASYONU VE OTOMATİK KAYDIRMA FONKSİYONLARI ---
-function showTypingIndicator() {
-    const box = document.getElementById('cBox');
-    if (!box) return;
-    
-    hideTypingIndicator();
-    
-    const indicator = document.createElement('div');
-    indicator.id = 'typingIndicator';
-    indicator.className = 'typing-indicator';
-    indicator.innerHTML = '<span></span><span></span><span></span>';
-    box.appendChild(indicator);
-    
-    scrollToBottom('smooth');
-}
-
-function hideTypingIndicator() {
-    const existing = document.getElementById('typingIndicator');
-    if (existing) existing.remove();
-}
-
-function scrollToBottom(behavior = 'smooth') {
-    const box = document.getElementById('cBox');
-    if (!box || !autoScrollEnabled) return;
-    
-    box.scrollTo({
-        top: box.scrollHeight,
-        behavior: behavior
-    });
-}
-
-function focusInput() {
-    const inp = document.getElementById('uInp');
-    if (inp) {
-        inp.focus();
-        setTimeout(() => inp.focus(), 100);
-    }
-}
-
-function setupScrollListener() {
-    const box = document.getElementById('cBox');
-    if (!box) return;
-    
-    box.removeEventListener('scroll', scrollHandler);
-    box.addEventListener('scroll', scrollHandler);
-}
-
-function scrollHandler() {
-    const box = document.getElementById('cBox');
-    if (!box) return;
-    
-    const isAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 50;
-    autoScrollEnabled = isAtBottom;
-}
-
-// --- 2. HABERLER ---
-let rssListesi = {};
-
-async function fetchAllNews() {
-    news = []; 
-    const proxyUrl = "https://wild-sky-08d7.06mmt8129.workers.dev/?url=";
-    
-    const cachedData = localStorage.getItem('khoj_news_cache');
-    const cacheTime = localStorage.getItem('khoj_news_time');
-    const now = new Date().getTime();
-    const birSaat = 60 * 60 * 1000;
-
-    if (cachedData && cacheTime && (now - cacheTime < birSaat)) {
-        console.log("Haberler hafızadan yükleniyor...");
-        news = JSON.parse(cachedData);
-        render();
-        return;
-    }
-    
-    document.getElementById('newsFeed').innerHTML = '<div style="text-align:center; padding:50px; color:var(--text);">Haberler Cloudflare hattından geliyor...</div>';
-
-    for (const id in rssListesi) {
-        const rss = rssListesi[id];
-        try {
-            console.log(`${rss.ad} yükleniyor...`);
-            const response = await fetch(proxyUrl + encodeURIComponent(rss.url));
-            const xmlText = await response.text();
+        <!-- RESİMLER KARTI -->
+        <div class="detay-kart">
+            <div class="kart-baslik"><span>🖼️ RESİMLER</span><button id="resimEkleBtn">📷</button></div>
+            <div id="resimListesi" class="resim-grid"></div>
             
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            
-            const items = xmlDoc.querySelectorAll("item, entry");
-            console.log(`${rss.ad}: ${items.length} haber bulundu`);
-
-            items.forEach((el, index) => {
-                const title = el.querySelector("title")?.textContent || "";
-                let link = el.querySelector("link")?.textContent || 
-                          el.querySelector("link")?.getAttribute("href") || "";
-                
-                const date = el.querySelector("pubDate")?.textContent || 
-                          el.querySelector("dc\\:date")?.textContent ||
-                          el.querySelector("date")?.textContent || 
-                          el.querySelector("lastBuildDate")?.textContent || 
-                          "";
-
-                // === GELİŞTİRİLMİŞ RESİM BULMA ===
-                let img = "";
-                
-                // 1. Mynet özel etiketleri (ipimage, img640x360, img300x300)
-                const mynetImg = el.querySelector("ipimage")?.textContent || 
-                                el.querySelector("img640x360")?.textContent ||
-                                el.querySelector("img300x300")?.textContent;
-                if (mynetImg) {
-                    img = mynetImg;
-                    console.log(`${rss.ad} - Mynet ipimage bulundu:`, img.substring(0, 50));
-                }
-                
-                // 2. Media content (standart RSS)
-                if (!img) {
-                    const mediaContent = el.querySelector("media\\:content") || 
-                                        el.getElementsByTagNameNS("http://search.yahoo.com/mrss/", "content")[0];
-                    if (mediaContent) {
-                        img = mediaContent.getAttribute("url") || mediaContent.getAttribute("src") || "";
-                    }
-                }
-                
-                // 3. Media thumbnail
-                if (!img) {
-                    const mediaThumb = el.querySelector("media\\:thumbnail") || 
-                                      el.getElementsByTagNameNS("http://search.yahoo.com/mrss/", "thumbnail")[0];
-                    if (mediaThumb) {
-                        img = mediaThumb.getAttribute("url") || mediaThumb.getAttribute("src") || "";
-                    }
-                }
-                
-                // 4. Enclosure
-                if (!img) {
-                    const enclosure = el.querySelector("enclosure");
-                    if (enclosure && enclosure.getAttribute("type")?.startsWith("image/")) {
-                        img = enclosure.getAttribute("url") || "";
-                    }
-                }
-                
-                // 5. Content:encoded içindeki ilk resmi bul
-                if (!img) {
-                    const contentEncoded = el.querySelector("content\\:encoded") || 
-                                         el.getElementsByTagNameNS("http://purl.org/rss/1.0/modules/content/", "encoded")[0];
-                    if (contentEncoded?.textContent) {
-                        // Tüm img etiketlerini bul
-                        const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
-                        const matches = [...contentEncoded.textContent.matchAll(imgRegex)];
-                        
-                        // İkon veya logo olmayan ilk resmi al
-                        for (const match of matches) {
-                            const imgUrl = match[1];
-                            if (!imgUrl.includes('icon') && !imgUrl.includes('logo') && !imgUrl.includes('avatar')) {
-                                img = imgUrl;
-                                break;
-                            }
-                        }
-                        
-                        // Eğer hala bulunamadıysa, ilk resmi al
-                        if (!img && matches.length > 0) {
-                            img = matches[0][1];
-                        }
-                    }
-                }
-                
-                // 6. Description içindeki resmi bul (ShiftDelete için)
-                if (!img) {
-                    const description = el.querySelector("description");
-                    if (description?.textContent) {
-                        // HTML entity'leri düzelt
-                        let descText = description.textContent
-                            .replace(/&lt;/g, '<')
-                            .replace(/&gt;/g, '>')
-                            .replace(/&quot;/g, '"')
-                            .replace(/&amp;/g, '&');
-                        
-                        // img etiketlerini ara
-                        const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
-                        const matches = [...descText.matchAll(imgRegex)];
-                        
-                        for (const match of matches) {
-                            const imgUrl = match[1];
-                            if (imgUrl && !imgUrl.includes('data:image') && !imgUrl.includes('icon')) {
-                                img = imgUrl;
-                                break;
-                            }
-                        }
-                        
-						// EĞER HALA BOŞSA (ShiftDelete gibi kaynaklar için burası hayat kurtarır)
-if (!imageUrl) {
-    const desc = item.querySelector('description')?.textContent || '';
-    const imgMatch = desc.match(/<img[^>]+src="([^">]+)"/);
-    if (imgMatch && imgMatch[1]) imageUrl = imgMatch[1];
-}
-						
-                        // Eğer hala bulunamadıysa, doğrudan resim URL'si ara
-                        if (!img) {
-                            const urlMatch = descText.match(/(https?:\/\/[^\s"']+\.(jpg|jpeg|png|gif|webp))/i);
-                            if (urlMatch) {
-                                img = urlMatch[1];
-                            }
-                        }
-                    }
-                }
-                
-                // 7. image etiketi
-                if (!img) {
-                    const imageTag = el.querySelector("image url, image");
-                    if (imageTag) {
-                        img = imageTag.textContent || imageTag.getAttribute("url") || "";
-                    }
-                }
-                
-                // === URL DÜZENLEMELERİ ===
-                if (img) {
-                    // HTML entity'leri temizle
-                    img = img.replace(/&amp;/g, '&')
-                             .replace(/&lt;/g, '<')
-                             .replace(/&gt;/g, '>')
-                             .replace(/&quot;/g, '"')
-                             .replace(/&#039;/g, "'");
-                    
-                    // Tırnak işaretlerini temizle
-                    img = img.replace(/['"]/g, '');
-                    
-                    // Göreceli URL'leri tam URL'ye çevir
-                    if (img.startsWith('/')) {
-                        try {
-                            const baseUrl = new URL(rss.url).origin;
-                            img = baseUrl + img;
-                        } catch (e) {
-                            const domainMatch = rss.url.match(/^(https?:\/\/[^\/]+)/);
-                            if (domainMatch) {
-                                img = domainMatch[1] + img;
-                            }
-                        }
-                    }
-                    
-                    // HTTP'yi HTTPS yap (güvenli bağlantı için)
-                    if (img.startsWith('http:')) {
-                        img = 'https:' + img.substring(5);
-                    }
-                    
-                    // URL'de boşluk varsa encode et
-                    img = img.replace(/ /g, '%20');
-                    
-                    // **CORS SORUNU İÇİN**: Resim URL'sini proxy'den geçir
-                    // Bazı siteler CORS politikası nedeniyle resimlerin başka domainlerde gösterilmesini engeller
-                    // Bunu aşmak için resimleri de proxy üzerinden yükleyebiliriz
-                    if (!img.includes('localhost') && !img.includes('mmt8129.github.io')) {
-                        // İsteğe bağlı: Resimleri de proxy'den geçir
-                        // img = proxyUrl + encodeURIComponent(img);
-                    }
-                }
-                
-                // === VARSAYILAN LOGO ===
-                const defaultLogo = rss.logo || "https://mmt8129.github.io/Gem/rsslogo.png";
-                
-                if (title && title.length > 5) {
-                    const newsItem = {
-                        title: title.trim(),
-                        link: link.trim(),
-                        source: rss.ad,
-                        category: rss.kategori || "GÜNDEM",
-                        pubDate: date,
-                        thumbnail: img || defaultLogo
-                    };
-                    
-                    news.push(newsItem);
-                    
-                    // Debug için log
-                    if (!img) {
-                        console.log(`⚠️ ${rss.ad} - Resim bulunamadı! Başlık: ${title.substring(0, 50)}`);
-                    } else if (index < 3) {
-                        console.log(`✅ ${rss.ad} - Resim bulundu: ${img.substring(0, 50)}`);
-                    }
-                }
-            });
-            
-        } catch (e) {
-            console.log(`${rss.ad} bağlantı sorunu:`, e);
-        }
-    }
-    
-    // Haberleri karıştır
-    news.sort(() => Math.random() - 0.5);
-    
-    // Önbelleğe al
-    localStorage.setItem('khoj_news_cache', JSON.stringify(news));
-    localStorage.setItem('khoj_news_time', new Date().getTime());
-    
-    console.log(`Toplam ${news.length} haber yüklendi`);
-    render(); 
-}
-
-
-db.ref('rss_ayarlari').on('value', snap => {
-    rssListesi = snap.val() || {};
-    if (Object.keys(rssListesi).length > 0) {
-        fetchAllNews();
-    }
-});
-
-setInterval(updateTime, 1000);
-updateTime();
-
-// Render fonksiyonunda resim yüklenirken hata kontrolü
-function renderNewsCard(item) {
-    return `
-        <div class="news-card" onclick="window.open('${item.link}', '_blank')">
-            <div class="news-image-container">
-                <img 
-                    src="${item.thumbnail}" 
-                    alt="${item.title}" 
-                    class="news-image"
-                    onerror="this.onerror=null; this.src='${item.sourceLogo || 'https://mmt8129.github.io/Gem/rsslogo.png'}'; this.classList.add('fallback-image');"
-                    loading="lazy"
-                >
-            </div>
-            <div class="news-content">
-                <div class="news-source">${item.source}</div>
-                <h3 class="news-title">${item.title}</h3>
-                <div class="news-category">${item.category}</div>
-            </div>
-        </div>
-    `;
-}
-
-
-function filterCat(cat) {
-    const items = document.querySelectorAll('.cat-item');
-    items.forEach(item => item.classList.remove('active'));
-
-    items.forEach(item => {
-        if (item.innerText.trim() === cat) {
-            item.classList.add('active');
-        }
-    });
-
-    console.log("Seçilen yeni kategori:", cat);
-    
-    // Kategori değişince scroll'u en başa al
-    const newsFeed = document.getElementById('newsFeed');
-    if (newsFeed) {
-        newsFeed.scrollTop = 0; // En tepeye git
-    }
-    
-    render(); 
-}
-
-function render() {
-    const f = document.getElementById('newsFeed');
-    if(!f) return;
-
-    const activeBtn = document.querySelector('.cat-item.active');
-    const currentCategory = activeBtn ? activeBtn.innerText.trim().toUpperCase() : "TÜMÜ";
-
-    // Kategoriye göre filtrele
-    let filteredNews = news.filter(n => {
-        if (currentCategory === "TÜMÜ") return true;
-        const haberKategorisi = n.category ? n.category.trim().toUpperCase() : "";
-        return haberKategorisi === currentCategory;
-    });
-
-    // SIRALAMA UYGULA
-    filteredNews = sortNews(filteredNews);
-
-    if (filteredNews.length === 0) {
-        f.innerHTML = `
-            <div style="text-align:center; padding:50px; color:var(--text);">
-                <div style="font-size:48px; margin-bottom:20px;">📂</div>
-                <div style="font-size:18px; font-weight:600;">${currentCategory} kategorisinde haber yok</div>
-                <div style="font-size:14px; color:var(--muted); margin-top:10px;">Farklı bir kategori seçmeyi dene</div>
-            </div>`;
-        return;
-    }
-
-    const displayedNews = filteredNews.slice(0, visibleCount);
-
-    f.innerHTML = displayedNews.map((n) => {
-        const realIdx = news.findIndex(x => x.title === n.title);
-        
-        // Tarihi formatla
-        let displayDate = '';
-        if (n.pubDate) {
-            const d = new Date(n.pubDate);
-            if (!isNaN(d.getTime())) {
-                displayDate = d.toLocaleDateString('tr-TR', { 
-                    day: 'numeric', 
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } else {
-                displayDate = n.pubDate.substring(0, 16);
-            }
-        }
-        
-    return `
-    <div class="news-card" onclick="openDetail(${realIdx})">
-        <img src="${n.thumbnail || 'https://mmt8129.github.io/Gem/rsslogo.png'}" 
-             onerror="this.onerror=null; this.src='https://mmt8129.github.io/Gem/rsslogo.png';"
-             loading="lazy">
-        <div style="flex:1">
-            <div class="news-meta">
-                <span class="news-source-badge">${n.source}</span>
-                <span class="news-date-badge">${displayDate || 'Tarih yok'}</span>
-                <span style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 8px; border-radius:12px; font-size:0.65rem; font-weight:700; margin-left:auto;">${n.category}</span>
-            </div>
-            <div class="news-title">${n.title}</div>
-        </div>
-    </div>`;
-    }).join('');
-
-    if (filteredNews.length > visibleCount) {
-        f.innerHTML += `
-            <div id="loadMoreArea" style="text-align:center; padding:20px 10px 40px 10px;">
-                <button class="btn-full" style="background:var(--primary); color:white; font-weight:bold; padding:16px; border-radius:30px;" onclick="loadMoreNews()">
-                    ➕ DAHA FAZLA GÖSTER (${filteredNews.length - visibleCount} HABER DAHA)
-                </button>
-            </div>`;
-    }
-}
-
-function closeSearch() {
-    activeSearchQuery = null;
-    closeM();
-}
-
-function loadMoreNews() {
-    const artisMiktari = (sets && sets.newsLimit) ? sets.newsLimit : 10;
-    visibleCount += artisMiktari;
-    render();
-}
-
-function getBestImage(item, sourceName) {
-    if (item.enclosure && item.enclosure.link) return item.enclosure.link;
-    if (item.thumbnail) return item.thumbnail;
-    
-    if (item.description && item.description.includes('<img')) {
-        const match = /<img[^>]+src="([^">]+)"/g.exec(item.description);
-        if (match && match[1]) return match[1];
-    }
-
-    let kaynakLogosu = "";
-    Object.values(rssListesi).forEach(r => {
-        if(r.ad === sourceName) kaynakLogosu = r.logo;
-    });
-
-    return kaynakLogosu || `https://ui-avatars.com/api/?name=${sourceName}&background=random&color=fff&size=200`;
-}
-
-function openSettings() {
-    const m = document.getElementById('mdl');
-    m.innerHTML = `
-        <div class="modal-header">
-            <h2>AYARLAR</h2>
-            <button class="btn-icon" onclick="closeM()" style="color:red;">❌</button>
-        </div>
-        <div class="modal-body">
-            <div class="set-row">
-                <label class="set-label">HABER SAYISI (ANA EKRAN)</label>
-                <div class="set-ctrl">
-                    <button onclick="adjustNewsLimit(-5)">-</button>
-                    <span id="newsLimitDisplay" style="min-width:45px; text-align:center; font-weight:bold; color:var(--text);">${sets.newsLimit || 10}</span>
-                    <button onclick="adjustNewsLimit(5)">+</button>
+            <div id="yuklemeKarti" style="display: none; margin-top: 10px;">
+                <div style="background: #f0f0f0; border-radius: 20px; padding: 20px; text-align: center; border: 3px dashed #2b7be4;">
+                    <div style="font-size: 32px; animation: spin 1s linear infinite;">◎</div>
+                    <div style="font-size: 14px; margin-top: 10px;">Fotoğraf yükleniyor...</div>
                 </div>
             </div>
-            
-            <div class="set-row">
-                <label class="set-label">ANA EKRAN HABER BAŞLIK BOYUTU</label>
-                <div class="set-ctrl">
-                    <button onclick="adjustSet('size',-1)">-</button>
-                    <span style="min-width:45px; text-align:center; color:var(--text);">${sets.size}PX</span>
-                    <button onclick="adjustSet('size',1)">+</button>
-                </div>
-            </div>
-
-            <div class="set-row">
-                <label class="set-label">ANA EKRAN HABER BAŞLIK KALINLIĞI</label>
-                <div class="set-ctrl">
-                    <button onclick="adjustSet('weight',-100)">-</button>
-                    <span style="min-width:45px; text-align:center; color:var(--text);">${sets.weight}</span>
-                    <button onclick="adjustSet('weight',100)">+</button>
-                </div>
-            </div>
-
-            <div class="set-row">
-                <label class="set-label">HABER İÇERİK YAZI BOYUTU</label>
-                <div class="set-ctrl">
-                    <button onclick="adjustContent('size',-1)">-</button>
-                    <span style="min-width:45px; text-align:center; color:var(--text);">${sets.contentSize || 14}PX</span>
-                    <button onclick="adjustContent('size',1)">+</button>
-                </div>
-            </div>
-
-            <div class="set-row">
-                <label class="set-label">HABER İÇERİK SATIR YÜKSEKLİĞİ</label>
-                <div class="set-ctrl">
-                    <button onclick="adjustContent('lineHeight',-0.1)">-</button>
-                    <span style="min-width:45px; text-align:center; color:var(--text);">${(sets.contentLineHeight || 1.6).toFixed(1)}</span>
-                    <button onclick="adjustContent('lineHeight',0.1)">+</button>
-                </div>
-            </div>
-
-            <hr style="border:0; border-top:1px solid var(--brd); margin:15px 0;">
-
-            <button class="btn-full" style="background:var(--card-bg); color:var(--text); border:1px solid var(--brd); margin-bottom:10px; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="openRSSManager()">
-                📡 RSS KAYNAKLARINI YÖNET
-            </button>
-
-            <button class="btn-full" style="background:#ef4444; color:white;" onclick="clearHistory()">
-                🗑️ SOHBETİ SIFIRLA
-            </button>
         </div>
-        <div class="modal-footer">
-            <button class="btn-full" style="background:#22c55e; color:white;" onclick="closeM()">TAMAM</button>
-        </div>`;
-    document.getElementById('ovl').style.display = 'flex';
-}
-// Haber içerik boyutu ayarı
-function adjustContent(type, val) {
-    if(type === 'size') {
-        sets.contentSize = Math.max(10, Math.min(24, (sets.contentSize || 14) + val));
-    } else if(type === 'lineHeight') {
-        sets.contentLineHeight = Math.max(1.2, Math.min(2.5, (sets.contentLineHeight || 1.6) + val));
-    }
-    applySets();
-    openSettings();
-}
+    </div>
+</div>
 
-function adjustNewsLimit(amount) {
-    if(!sets.newsLimit) sets.newsLimit = 10;
-    let newLimit = sets.newsLimit + amount;
+<!-- MODALLAR -->
+<div id="galeriModal" class="modal">
+    <div class="galeri-resim-kapsayici" id="galeriKapsayici">
+        <img id="galeriImg" class="galeri-resim" src="" alt="resim" onclick="toggleGaleriButonlari()">
+    </div>
+    <div class="galeri-kontrol" id="galeriKontrol">
+        <button class="btn-mavi" id="galeriOnce">⬅️</button>
+        <button class="btn-mavi" id="galeriSonra">➡️</button>
+        <button class="btn-kirmizi" id="galeriSil">🗑️</button>
+        <button class="btn-mavi" id="galeriKapat">✖️</button>
+    </div>
+</div>
 
-    if (newLimit >= 5 && newLimit <= 20) {
-        sets.newsLimit = newLimit;
-        visibleCount = newLimit; 
-        
-        const display = document.getElementById('newsLimitDisplay');
-        if (display) display.innerText = newLimit;
-        
-        saveSets();
-    }
-}
+<div id="onayModal" class="onay-modal">
+    <h3 id="onayMesaj">🗑️ SİLME ONAYI</h3>
+    <div class="onay-butonlar">
+        <button class="btn-mavi" id="onayEvet">✅ EVET</button>
+        <button class="btn-kirmizi" id="onayHayir">❌ HAYIR</button>
+    </div>
+</div>
 
-function saveSets() {
-    localStorage.setItem('khoj_sets', JSON.stringify(sets));
-}
+<div id="secenekModal" class="secenek-modal">
+    <button class="btn-mavi" id="galeriSec">📁 GALERİDEN SEÇ</button>
+    <button class="btn-mavi" id="kameraSec">📸 KAMERA İLE ÇEK</button>
+    <button class="btn-kirmizi" id="secenekIptal">❌ İPTAL</button>
+</div>
 
-function openRSSManager() {
-    const m = document.getElementById('mdl');
-    
-    m.innerHTML = `
-        <div class="modal-header">
-            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-                <h2 style="font-size:1.1rem; font-weight:900;">📡 RSS AYARLARI</h2>
-                <button class="btn-icon" onclick="openAddRSS()" style="background:var(--primary); color:white; border:none; width:35px; height:35px; font-weight:bold; font-size:1.2rem;">+</button>
-            </div>
-        </div>
-        <div class="modal-body" id="rssListContainer">
-            <p style="text-align:center; padding:20px; color:#888;">Kaynaklar yükleniyor...</p>
-        </div>
-        <div class="modal-footer">
-            <button onclick="openSettings()" class="btn-full">GERİ DÖN</button>
-        </div>
-    `;
-    document.getElementById('ovl').style.display = 'flex';
+<script type="module">
+// Firebase Importları
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    db.ref('rss_ayarlari').on('value', snap => {
-        const container = document.getElementById('rssListContainer');
-        if(!container) return;
-        
-        const data = snap.val();
-        if(!data) {
-            container.innerHTML = `<p style="text-align:center; padding:20px; color:#888;">Henüz hiç RSS eklenmemiş abi.</p>`;
-            return;
-        }
-
-        let html = `<p style="font-size:11px; color:#888; font-weight:800; text-transform:uppercase; margin-bottom:10px;">Ekli Kaynaklar</p>`;
-        
-        Object.keys(data).forEach(key => {
-            const rss = data[key];
-            html += `
-                <div style="padding:12px; background:var(--bg); border:1px solid var(--brd); border-radius:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="font-weight:bold; font-size:14px;">${rss.ad}</span>
-                        <span style="font-size:10px; color:var(--primary); font-weight:800;">${rss.kategori}</span>
-                    </div>
-                    <span onclick="editRSS('${key}')" style="cursor:pointer; font-size:1.2rem;">✏️</span>
-                    <span onclick="confirmDeleteRSS('${key}')" style="color:#ef4444; cursor:pointer; font-size:1.2rem; padding:5px;">🗑️</span>
-                </div>
-            `;
-        });
-        container.innerHTML = html;
-    });
-}
-
-function editRSS(key) {
-    db.ref('rss_ayarlari/' + key).once('value', snap => {
-        const rss = snap.val();
-        if(!rss) return;
-
-        const m = document.getElementById('mdl');
-        m.innerHTML = `
-            <div class="modal-header">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <button class="btn-icon" onclick="openRSSManager()" style="width:35px; height:35px;">⬅️</button>
-                    <h2 style="font-size:1.1rem; font-weight:900;">RSS DÜZENLE</h2>
-                </div>
-            </div>
-            <div class="modal-body">
-                <div class="set-row"><label class="set-label">RSS ADI</label>
-                    <input type="text" id="edit_rssName" value="${rss.ad}" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text);">
-                </div>
-                <div class="set-row"><label class="set-label">RSS KAYNAĞI (URL)</label>
-                    <input type="text" id="edit_rssUrl" value="${rss.url}" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text);">
-                </div>
-                <div class="set-row"><label class="set-label">LOGO URL</label>
-                    <input type="text" id="edit_rssLogo" value="${rss.logo || ''}" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text);">
-                </div>
-                <div class="set-row"><label class="set-label">KATEGORİ</label>
-                    <select id="edit_rssCat" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text);">
-                        ${['TÜRKİYE','DÜNYA','GÜNDEM','TEKNOLOJİ','SPOR','OTOMOBİL','DİĞER'].map(c => 
-                            `<option value="${c}" ${rss.kategori === c ? 'selected' : ''}>${c}</option>`
-                        ).join('')}
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-full" onclick="updateRSS('${key}')">GÜNCELLEMELERİ KAYDET</button>
-            </div>
-        `;
-    });
-}
-
-function updateRSS(key) {
-    const ad = document.getElementById('edit_rssName').value;
-    const url = document.getElementById('edit_rssUrl').value;
-    const kat = document.getElementById('edit_rssCat').value;
-    const logo = document.getElementById('edit_rssLogo').value;
-
-    if(!ad || !url) { alert("Alanlar boş bırakılamaz!"); return; }
-
-    db.ref('rss_ayarlari/' + key).update({
-        ad: ad,
-        url: url,
-        kategori: kat,
-        logo: logo
-    }).then(() => {
-        showToast("Güncellendi! ✅");
-        openRSSManager();
-    }).catch(e => alert("Hata: " + e.message));
-}
-
-function executeDeleteRSS(key) {
-    db.ref('rss_ayarlari/' + key).remove()
-        .then(() => {
-            showToast("Kaynak Silindi 🗑️");
-            openRSSManager();
-        })
-        .catch(e => alert("Hata: " + e.message));
-}
-
-function confirmDeleteRSS(key) {
-    const m = document.getElementById('mdl');
-    m.innerHTML = `
-        <div class="modal-header">
-            <h2 style="color:#ef4444;">KAYNAĞI SİL?</h2>
-            <button class="btn-icon" onclick="openRSSManager()" style="color:red;">❌</button>
-        </div>
-        <div class="modal-body" style="text-align:center; padding:20px;">
-            <p style="font-size:16px; margin-bottom:25px; line-height:1.5;">Bu RSS kaynağını listeden kaldırmak istediğine emin misin abi?</p>
-            <div style="display:flex; gap:12px;">
-                <button class="btn-full" onclick="executeDeleteRSS('${key}')" style="background:#ef4444; color:white; font-weight:bold;">EVET, SİL</button>
-                <button class="btn-full" onclick="openRSSManager()" style="background:var(--brd); color:var(--text);">VAZGEÇ</button>
-            </div>
-        </div>
-    `;
-}
-
-function openAddRSS() {
-    const m = document.getElementById('mdl');
-    m.innerHTML = `
-        <div class="modal-header">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <button class="btn-icon" onclick="openRSSManager()" style="width:35px; height:35px;">⬅️</button>
-                <h2 style="font-size:1.1rem; font-weight:900;">YENİ RSS EKLE</h2>
-            </div>
-        </div>
-        
-        <div class="modal-body">
-            <div class="set-row">
-                <label class="set-label">RSS ADI</label>
-                <input type="text" id="rssName" placeholder="Örn: TRT Haber" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text); font-size:14px;">
-            </div>
-            <div class="set-row">
-                <label class="set-label">RSS KAYNAĞI (URL)</label>
-                <input type="text" id="rssUrl" placeholder="https://..." style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text); font-size:14px;">
-            </div>
-            <div class="set-row">
-                <label class="set-label">LOGO URL (İsteğe bağlı)</label>
-                <input type="text" id="rssLogo" placeholder="https://...png" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text); font-size:14px;">
-            </div>
-            <div class="set-row">
-                <label class="set-label">KATEGORİ</label>
-                <select id="rssCat" style="width:100%; padding:15px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text); font-weight:bold; font-size:14px;">
-                    <option value="TÜRKİYE">TÜRKİYE</option>
-                    <option value="DÜNYA">DÜNYA</option>
-                    <option value="GÜNDEM">GÜNDEM</option>
-                    <option value="TEKNOLOJİ">TEKNOLOJİ</option>
-                    <option value="SPOR">SPOR</option>
-                    <option value="OTOMOBİL">OTOMOBİL</option>
-                    <option value="DİĞER">DİĞER</option>
-                </select>
-            </div>
-        </div>
-        <div class="modal-footer" style="display:flex; gap:10px;">
-            <button class="btn-full" style="background:#888; flex:1;" onclick="openRSSManager()">İPTAL</button>
-            <button class="btn-full" style="flex:2;" onclick="saveNewRSS()">KAYDET</button>
-        </div>
-    `;
-}
-
-function saveNewRSS() {
-    const ad = document.getElementById('rssName').value;
-    const url = document.getElementById('rssUrl').value;
-    const kat = document.getElementById('rssCat').value;
-    const logo = document.getElementById('rssLogo').value;
-
-    if(!ad || !url) { alert("Lütfen tüm alanları doldur abi!"); return; }
-
-    const newRssRef = db.ref('rss_ayarlari').push();
-    newRssRef.set({
-        ad: ad,
-        url: url,
-        kategori: kat,
-        logo: logo,
-        eklenmeTarihi: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        showToast("RSS Başarıyla Eklendi! 🚀");
-        openRSSManager();
-    }).catch((e) => {
-        alert("Hata oluştu abi: " + e.message);
-    });
-}
-
-function adjustSet(k, v) { 
-    if(k === 'size') sets.size = Math.max(8, (sets.size || 13) + v);
-    if(k === 'weight') sets.weight = Math.max(100, (sets.weight || 600) + v);
-    applySets(); 
-    openSettings(); 
-}
-
-function applySets() {
-    document.documentElement.style.setProperty('--news-size', sets.size + 'px');
-    document.documentElement.style.setProperty('--news-weight', sets.weight);
-    localStorage.setItem('khoj_sets', JSON.stringify(sets));
-}
-
-function quickAdjust(type, val) {
-    if(type === 'size') {
-        sets.chatSize = (sets.chatSize || 13) + val;
-        document.documentElement.style.setProperty('--chat-size', sets.chatSize + 'px');
-    } else {
-        sets.chatWeight = (sets.chatWeight || 600) + val;
-        document.documentElement.style.setProperty('--chat-weight', sets.chatWeight);
-    }
-    localStorage.setItem('khoj_sets', JSON.stringify(sets));
-}
-
-const originalOpenDetail = openDetail;
-openDetail = function(idx) {
-    originalOpenDetail(idx);
-    
-    setTimeout(() => {
-        showPendingResponses();
-    }, 500);
+const firebaseConfig = {
+    apiKey: "AIzaSyClpsUxz81-qXr_ytRO1kiDz2BEoZJFwVE",
+    authDomain: "edel-2c027.firebaseapp.com",
+    projectId: "edel-2c027",
+    storageBucket: "edel-2c027.firebasestorage.app",
+    messagingSenderId: "1059038629442",
+    appId: "1:1059038629442:web:e5ee6b76f892ccd1eee7db"
 };
 
-const originalOpenGeneralChat = openGeneralChat;
-openGeneralChat = function() {
-    // Bekleyen bildirim var mı kontrol et
-    const pendingResponses = JSON.parse(localStorage.getItem('pending_ai_responses') || '[]');
-    
-    if (pendingResponses.length > 0) {
-        // Bildirim varsa listeyi göster
-        showPendingList();
-    } else {
-        // Yoksa normal sohbeti aç
-        originalOpenGeneralChat();
-    }
-};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-// Bekleyen cevapları göster (ANCAK MESAJLARI SİLMEZ)
-function showPendingResponses() {
-    const pendingResponses = JSON.parse(localStorage.getItem('pending_ai_responses') || '[]');
-    if (pendingResponses.length === 0) return;
-    
-    const box = document.getElementById('cBox');
-    if (!box) return;
-    
-    // "Bekleyen cevaplar" başlığı
-    const header = document.createElement('div');
-    header.className = 'msg ai';
-    header.style.cssText = 'background:rgba(239,68,68,0.2); text-align:center; font-weight:bold; padding:10px; border-radius:12px; margin-bottom:15px;';
-    header.innerHTML = `📨 **${pendingResponses.length} YENİ CEVAP GELDİ** (aşağıda listeleniyor)`;
-    box.appendChild(header);
-    
-    // Her bekleyen cevabı göster
-    pendingResponses.forEach((item, index) => {
-        const date = new Date(item.timestamp).toLocaleString('tr-TR');
-        
-        const msg = document.createElement('div');
-        msg.className = 'msg ai notification';
-        msg.id = `pending-response-${item.id}`;  // <-- BURASI ÖNEMLİ (id ekle)
-        msg.style.cssText = 'background:rgba(239,68,68,0.1); border-left:4px solid #ef4444; margin-bottom:20px; border-radius:12px; padding:16px;';
-        
-        // Eğer zaten okunmuşsa normal göster
-        if (item.isRead) {
-            msg.classList.remove('notification');
-            msg.style.cssText = 'background:var(--card-bg); border-left:none; margin-bottom:12px; border-radius:12px; padding:12px;';
-            msg.innerHTML = `
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="font-size:11px; color:var(--muted);">${date}</span>
-                </div>
-                <div style="font-size:13px; margin-bottom:8px;">
-                    <strong>Siz:</strong> ${item.question}
-                </div>
-                <div style="padding:8px; background:var(--bg); border-radius:8px;">
-                    ${item.answer}
-                </div>
-            `;
-        } else {
-            // Okunmamışsa bildirim olarak göster
-            msg.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <div>
-                        <span style="font-weight:bold; color:#ef4444; background:rgba(239,68,68,0.2); padding:4px 12px; border-radius:20px; font-size:12px;">📨 YENİ ${index+1}</span>
-                    </div>
-                    <span style="font-size:11px; color:gray; background:rgba(0,0,0,0.05); padding:4px 8px; border-radius:12px;">${date}</span>
-                </div>
-                <div style="font-size:13px; margin-bottom:12px; background:rgba(0,0,0,0.03); padding:10px; border-radius:8px;">
-                    <strong style="color:#ef4444;">Siz:</strong> ${item.question}
-                </div>
-                <div style="padding:12px; background:white; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
-                    ${item.answer}
-                </div>
-                <div style="display:flex; justify-content:flex-end; margin-top:12px;">
-                    <button onclick="markNotificationAsRead(${item.id})" 
-                        style="padding:6px 16px; background:#ef4444; color:white; border:none; border-radius:20px; font-size:12px; font-weight:bold; cursor:pointer; transition:all 0.2s;">
-                        ✓ Bildirimi Temizle
-                    </button>
-                </div>
-            `;
-        }
-        box.appendChild(msg);
-    });
-    
-    scrollToBottom('smooth');
-}
+// State
+let kayitlar = [];
+let aktifKayitId = null;
+let galeriIndex = 0;
+let galeriResimList = [];
+let galeriButonGorunur = true;
+let onayCallback = null;
 
-
-
-// Cevabı okundu olarak işaretle
-function removePendingResponse(id) {
-    let pendingResponses = JSON.parse(localStorage.getItem('pending_ai_responses') || '[]');
-    pendingResponses = pendingResponses.filter(item => item.id !== id);
-    localStorage.setItem('pending_ai_responses', JSON.stringify(pendingResponses));
-    
-    // Rozeti güncelle
-    if (pendingResponses.length > 0) {
-        addNotificationBadge(pendingResponses.length);
-    } else {
-        const badge = document.getElementById('aiNotificationBadge');
-        if (badge) badge.remove();
-    }
-    
-    // Sayfayı yenilemeden gösterimi güncelle
-    const modal = document.getElementById('ovl');
-    if (modal.style.display === 'flex' && active && active.source === "KHOJ") {
-        // Aynı sayfada kalmak için mevcut sohbeti yeniden aç
-        const currentActive = active;
-        openGeneralChat();
-        setTimeout(() => {
-            showPendingResponses();
-        }, 300);
-    } else {
-        showToast('Cevap okundu olarak işaretlendi');
-    }
-}
-
-function markNotificationAsRead(id) {
-    let pendingResponses = JSON.parse(localStorage.getItem('pending_ai_responses') || '[]');
-    
-    // Bu id'yi "okundu" olarak işaretle (ama silme)
-    const updatedResponses = pendingResponses.map(item => {
-        if (item.id === id) {
-            return { ...item, isRead: true };
-        }
-        return item;
-    });
-    
-    localStorage.setItem('pending_ai_responses', JSON.stringify(updatedResponses));
-    
-    // Hala okunmamış bildirim var mı kontrol et
-    const unreadCount = updatedResponses.filter(item => !item.isRead).length;
-    
-    // Rozeti güncelle (sadece okunmamışları göster)
-    if (unreadCount > 0) {
-        addNotificationBadge(unreadCount);
-    } else {
-        const badge = document.getElementById('aiNotificationBadge');
-        if (badge) badge.remove();
-    }
-    
-    // Butonun yazısını değiştir (geri bildirim)
-    const btn = event.target;
-    btn.textContent = '✓ Temizlendi';
-    btn.style.background = '#22c55e';
-    btn.disabled = true;
-    
-    showToast('Bildirim temizlendi, mesaj duruyor');
-}
-
-
-// --- GÜNCELLENMİŞ openDetail FONKSİYONU (ÇOKLU RESİM GALERİLİ) ---
-function openDetail(idx) {
-    
-    if (idx !== -1 && idx !== -2) { active = news[idx]; }
-    
-    console.log("Haber Verisi:", active);
-    console.log("Tarih Alanı:", active.pubDate);
-    
-    const m = document.getElementById('mdl');
-    const isGeneralChat = (active && active.source === "KHOJ");
-    
-    // Tam ekran modu için class ekle/kaldır
-    if (isGeneralChat) {
-        m.classList.add('fullscreen-chat');
-    } else {
-        m.classList.remove('fullscreen-chat');
-    }
-    
-    const img = getBestImage(active, active.source);
-    
-    const hamTarih = active.pubDate || active.date || active.time || "";
-    console.log("Yakalanan Tarih:", hamTarih);
-
-    let displayDate = "";
-    if (active.pubDate) {
-        const d = new Date(active.pubDate);
-        if (!isNaN(d.getTime())) {
-            displayDate = d.toLocaleString('tr-TR', {
-                day: 'numeric', 
-                month: 'long', 
-                hour: '2-digit', 
-                minute: '2-digit'
-            });
-        } else {
-            displayDate = active.pubDate.split(' +')[0]; 
-        }
-    }
-
-    const cleanDesc = active.description ? active.description.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim().substring(0, 1000) + "..." : "Haber içeriği yükleniyor...";
-
-    if (document.activeElement) { document.activeElement.blur(); }
-
-    // Kayıtlı mı kontrol et
-    const savedNews = JSON.parse(localStorage.getItem('khoj_saved_news') || '[]');
-    const isSaved = savedNews.some(item => item.title === active?.title);
-    console.log("Haber kayıtlı mı?", isSaved);
-    
-    const saveBtnClass = isSaved ? 'btn-icon saved' : 'btn-icon';
-    const saveBtnTitle = isSaved ? 'Kayıtlı (güncelle)' : 'Kaydet';
-
-    // Resim galerisi için fonksiyon
-    const getGalleryHTML = () => {
-        let newsImages = [];
-        
-        // 1. Thumbnail varsa ekle
-        if (active.thumbnail && active.thumbnail !== 'logo.png' && active.thumbnail !== 'varsayilan-logo.png') {
-            newsImages.push(active.thumbnail);
-        }
-        
-        // 2. Açıklamadan resim bul
-        if (active.description) {
-            const imgRegex = /<img[^>]+src="([^">]+)"/g;
-            let match;
-            while ((match = imgRegex.exec(active.description)) !== null) {
-                if (!newsImages.includes(match[1])) {
-                    newsImages.push(match[1]);
-                }
-            }
-        }
-        
-        // 3. Hiç resim yoksa logo kullan
-        if (newsImages.length === 0) {
-            newsImages = [img];
-        }
-        
-        const mainImage = newsImages[0];
-        
-        // Ana resim
-        let galleryHtml = `
-            <img src="${mainImage}" 
-                 class="main-image"
-                 onclick='openGallery(${JSON.stringify(newsImages).replace(/'/g, "\\'")}, 0)'
-                 onerror="this.src='logo.png'"
-                 style="width:100%; border-radius:15px; margin-bottom:10px; cursor:pointer; transition:opacity 0.2s;"
-                 onmouseover="this.style.opacity='0.9'"
-                 onmouseout="this.style.opacity='1'"
-                 title="Büyütmek için tıkla">
-        `;
-        
-        // Birden fazla resim varsa küçük resimleri ekle
-        if (newsImages.length > 1) {
-            galleryHtml += `<div class="multi-image-gallery">`;
-            newsImages.forEach((imgUrl, index) => {
-                galleryHtml += `
-                    <img src="${imgUrl}" 
-                         class="gallery-thumb ${index === 0 ? 'active' : ''}"
-                         onclick='openGallery(${JSON.stringify(newsImages).replace(/'/g, "\\'")}, ${index})'
-                         onerror="this.src='logo.png'"
-                         title="Resim ${index + 1}">
-                `;
-            });
-            galleryHtml += `</div>`;
-        }
-        
-        return galleryHtml;
-    };
-
-    // Genel sohbet için tam ekran içerik
-    if (isGeneralChat) {
-        m.innerHTML = `
-            <div class="modal-header" style="padding: 10px 16px;">
-                <div style="display:flex; justify-content: space-between; align-items:center; width:100%;">
-                    <div style="font-weight: 800; font-size: 1rem; color: var(--primary); font-family: 'Orbitron'; display: flex; align-items: center; gap: 8px;">
-                        <span>✨ GENEL SOHBET</span>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:5px;" class="btn-icon-group">
-                        <button class="btn-icon size-btn" style="font-size:9px; width:28px; height:28px;" onclick="quickAdjust('size', 1)" title="Yazı büyüt">Y+</button>
-                        <button class="btn-icon size-btn" style="font-size:9px; width:28px; height:28px;" onclick="quickAdjust('size', -1)" title="Yazı küçült">Y-</button>
-                        <button class="btn-icon weight-btn" style="font-size:9px; width:28px; height:28px;" onclick="quickAdjust('weight', 100)" title="Kalınlaştır">K+</button>
-                        <button class="btn-icon weight-btn" style="font-size:9px; width:28px; height:28px;" onclick="quickAdjust('weight', -100)" title="İncelt">K-</button>
-                        <span style="width:1px; height:20px; background:var(--brd); margin:0 5px;"></span>
-                        <button class="btn-icon" style="width:28px; height:28px;" onclick="shareNews(active.title.replace(/'/g, ''), active.link)" title="Paylaş">📤</button>
-                        <button class="${saveBtnClass}" style="width:28px; height:28px;" onclick="saveNews()" title="${saveBtnTitle}" id="detailSaveBtn">💾</button>
-                        <button class="btn-icon" style="width:28px; height:28px; color:red;" onclick="closeM()" title="Kapat">✕</button>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-body" style="padding: 0; overflow: hidden;">
-                <div style="background:var(--card-bg); height: 100%; overflow: hidden; display: flex; flex-direction: column;">
-                    <div class="chat-box" id="cBox" style="flex: 1; overflow-y: auto; border: none; border-radius: 0; min-height: auto; max-height: none; padding: 16px;">
-                        ${active.savedChat || chatHistory.map(msg => `<div class="msg ${msg.role === 'user' ? 'user' : 'ai'}">${msg.text}</div>`).join('')}
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer" style="padding: 12px 16px;">
-                <div style="display:flex; gap:10px; width:100%;">
-                    <input type="text" id="uInp" 
-                        placeholder="Bir şeyler sor veya sohbet et..." 
-                        style="flex:1; padding:14px 18px; border-radius: 30px; border: 2px solid var(--brd); background: var(--bg); color: var(--text); font-size: 16px;">
-                    <button class="btn-icon btn-save" id="sendBtn" style="width: 50px; height: 50px; border-radius: 50%;">➤</button>
-                </div>
-            </div>`;
-    } else {
-        // Normal haber detayı
-        m.innerHTML = `
-		
-<div style="font-size:10px; color:var(--muted); margin-top:4px;">
-    Sıralama: ${getSortLabel(sortConfig.type)} (${sortConfig.direction === 'desc' ? 'Azalan' : 'Artan'})
-</div>
-            <div class="modal-header" style="padding: 10px 15px;">
-                <div style="display:flex; justify-content: space-between; align-items:center; width:100%;">
-                    <div style="font-weight: 800; font-size: 0.9rem; color: var(--primary); font-family: 'Orbitron'; display: flex; align-items: center; gap: 8px;">
-    <span style="background: var(--primary); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem;">${active.source}</span>
-    <span style="font-size: 0.7rem; color: var(--muted);">📰 HABER</span>
-</div>
-                    <div style="display:flex; align-items:center; gap:5px;" class="btn-icon-group">
-                        <!-- Yazı boyutu kontrolleri -->
-                        <button class="btn-icon size-btn" style="font-size:9px; width:26px; height:26px;" onclick="quickAdjust('size', 1)" title="Yazı büyüt">Y+</button>
-                        <button class="btn-icon size-btn" style="font-size:9px; width:26px; height:26px;" onclick="quickAdjust('size', -1)" title="Yazı küçült">Y-</button>
-                        
-                        <!-- Kalınlık kontrolleri -->
-                        <button class="btn-icon weight-btn" style="font-size:9px; width:26px; height:26px;" onclick="quickAdjust('weight', 100)" title="Kalınlaştır">K+</button>
-                        <button class="btn-icon weight-btn" style="font-size:9px; width:26px; height:26px;" onclick="quickAdjust('weight', -100)" title="İncelt">K-</button>
-                        
-                        <!-- İçerik boyutu kontrolleri -->
-                        <button class="btn-icon content-btn" style="font-size:9px; width:26px; height:26px;" onclick="quickAdjustContent('size', -1)" title="İçerik küçült">İ-</button>
-                        <button class="btn-icon content-btn" style="font-size:9px; width:26px; height:26px;" onclick="quickAdjustContent('size', 1)" title="İçerik büyüt">İ+</button>
-                        
-                        <span style="width:1px; height:20px; background:var(--brd); margin:0 5px;"></span>
-                        
-                        <!-- Paylaş butonu -->
-                        <button class="btn-icon" style="width:26px; height:26px;" onclick="shareNews(active.title.replace(/'/g, ''), active.link)" title="Paylaş">📤</button>
-                        
-                        <!-- Kaydet butonu -->
-                        <button class="${saveBtnClass}" style="width:26px; height:26px;" onclick="saveNews()" title="${saveBtnTitle}" id="detailSaveBtn">💾</button>
-                        
-                        <!-- Haber linki butonu -->
-                        ${active.link ? `<button class="btn-icon" style="width:26px; height:26px;" onclick="openFullNews('${active.link}')" title="Habere git">🔗</button>` : ''}
-                        
-                        <!-- Kapat butonu -->
-                        <button class="btn-icon" style="width:26px; height:26px; background:rgba(239,68,68,0.2); color:#ef4444;" onclick="closeM()" title="Kapat">✕</button>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-body">
-                <h2 style="margin-bottom:15px; line-height:1.3; font-size:1.4em;">${active.title}</h2>
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-    <span style="font-size22px; color:var(--muted); background:rgba(0,0,0,0.05); padding:4px 12px; border-radius:20px;">📅 ${displayDate}</span>
-</div>
-                <div id="dynamicContent" style="background:rgba(239, 68, 68, 0.05); border-left:4px solid #ef4444; padding:15px; margin-bottom:20px; border-radius:0 10px 10px 0;">
-                    <p style="font-size:14px; line-height:1.6; margin:0;">${cleanDesc}</p>
-                </div>
-                
-                <!-- RESİM GALERİSİ -->
-                ${getGalleryHTML()}
-                
-                <div style="background:var(--card-bg); border:1px solid var(--brd); border-radius:12px; overflow:hidden;">
-                    <div style="background:var(--brd); padding:8px 15px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-size:11px; font-weight:bold; color:var(--text); opacity:0.7;">YAPAY ZEKA ANALİZİ</span>
-                        <button onclick="document.getElementById('uInp').value='Haberin özeti'; ask();" style="background:#ef4444; color:white; border:none; padding:5px 12px; border-radius:20px; font-size:10px; font-weight:bold; cursor:pointer; display:flex; align-items:center; gap:4px;">
-                            ✨ AI ile Özetle
-                        </button>
-                    </div>
-                    <div class="chat-box" id="cBox" style="min-height:250px; max-height:350px; overflow-y:auto; padding:10px;">
-                        <div class="msg ai">Haber hakkında soru sorabilirsin...</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div style="display:flex; gap:10px; width:100%;">
-                    <input type="text" id="uInp" 
-                        placeholder="Haberi analiz et veya soru sor..." 
-                        style="flex:1; padding:14px; border-radius:12px; border:2px solid var(--brd); background:var(--bg); color:var(--text); font-size:16px;">
-                    <button class="btn-icon btn-save" id="sendBtn" style="width:50px;">➤</button>
-                </div>
-            </div>`;
-    }
-
-    // İçerik çekme işlemi (sadece haberler için)
-    if (!isGeneralChat && active.link) {
-        const myProxy = "https://wild-sky-08d7.06mmt8129.workers.dev/?url=";
-        fetch(myProxy + encodeURIComponent(active.link))
-            .then(res => res.text())
-            .then(html => {
-                const doc = new DOMParser().parseFromString(html, 'text/html');
-                const paragraphs = Array.from(doc.querySelectorAll('p'))
-                    .map(p => p.textContent.trim())
-                    .filter(t => t.length > 40).slice(0, 5).join('<br><br>');
-                if (paragraphs) { 
-                    document.getElementById('dynamicContent').innerHTML = `<p style="font-size:14px; line-height:1.6; margin:0;">${paragraphs}</p>`; 
-                }
-            }).catch(e => console.log("İçerik çekilemedi."));
-    }
-
-    document.getElementById('ovl').style.display = 'flex';
-    
-    // Scroll listener'ı kur
-    const box = document.getElementById('cBox');
-    if (box) {
-        setupScrollListener();
-        setTimeout(() => scrollToBottom('auto'), 100);
-    }
-    
-    const inp = document.getElementById('uInp');
-    inp.addEventListener('keypress', (e) => { 
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            ask();
-        }
-    });
-    document.getElementById('sendBtn').onclick = ask;
-    
-    // setTimeout(focusInput, 300); // <-- Bu satırı yorum yap veya sil (klavye otomatik açılmasın)
-}
-
-// Haber detayında resimleri bul
-function extractImagesFromNews(newsItem) {
-    let images = [];
-    
-    // 1. Ana thumbnail varsa ekle
-    if (newsItem.thumbnail && newsItem.thumbnail !== 'logo.png' && newsItem.thumbnail !== 'varsayilan-logo.png') {
-        images.push(newsItem.thumbnail);
-    }
-    
-    // 2. Açıklamadan resimleri bul
-    if (newsItem.description) {
-        const imgRegex = /<img[^>]+src="([^">]+)"/g;
-        let match;
-        while ((match = imgRegex.exec(newsItem.description)) !== null) {
-            if (!images.includes(match[1])) {
-                images.push(match[1]);
-            }
-        }
-    }
-    
-    // 3. Eğer hiç resim yoksa, varsayılan logo
-    if (images.length === 0) {
-        images.push('logo.png');
-    }
-    
-    return images;
-}
-
-// openGallery fonksiyonunu güncelle
-function openGallery(images, startIndex) {
-    console.log("openGallery çağrıldı:", images, startIndex);
-    
-    if (!images || images.length === 0) {
-        console.log("Resim yok");
-        return;
-    }
-    
-    if (typeof images === 'string') {
-        try {
-            images = JSON.parse(images);
-        } catch (e) {
-            console.log("JSON parse hatası:", e);
-            return;
-        }
-    }
-    
-    currentImages = images;
-    currentImageIndex = startIndex;
-    
-    const viewer = document.getElementById('imageViewer');
-    const viewerImage = document.getElementById('viewerImage');
-    const thumbnailStrip = document.getElementById('thumbnailStrip');
-    const counter = document.getElementById('imageCounter');
-    const prevBtn = document.getElementById('prevImageBtn');
-    const nextBtn = document.getElementById('nextImageBtn');
-    
-    if (!viewer || !viewerImage) {
-        console.log("Görüntüleyici elemanları bulunamadı!");
-        return;
-    }
-    
-    // Zoom'u sıfırla
-    viewerImage.style.transform = 'scale(1)';
-    viewerImage.style.transition = 'transform 0.2s ease';
-    currentScale = 1;
-    initialDistance = 0;
-    
-    // Ana resmi göster
-    viewerImage.src = images[startIndex];
-    
-    // Pinch zoom'u ayarla
-    setTimeout(() => {
-        setupPinchZoom();
-    }, 100);
-    
-    // Sayaçı güncelle
-    if (counter) {
-        counter.textContent = `${startIndex + 1}/${images.length}`;
-    }
-    
-    // Önceki/sonraki butonlarını göster/gizle
-    if (prevBtn && nextBtn) {
-        if (images.length <= 1) {
-            prevBtn.style.display = 'none';
-            nextBtn.style.display = 'none';
-        } else {
-            prevBtn.style.display = 'flex';
-            nextBtn.style.display = 'flex';
-        }
-    }
-    
-    // Küçük resimleri oluştur
-    if (thumbnailStrip) {
-        thumbnailStrip.innerHTML = '';
-        images.forEach((img, idx) => {
-            const thumb = document.createElement('img');
-            thumb.src = img;
-            thumb.className = `thumb-img ${idx === startIndex ? 'active' : ''}`;
-            thumb.onclick = (e) => {
-                e.stopPropagation();
-                navigateToImage(idx);
-            };
-            thumb.onerror = () => { thumb.src = 'logo.png'; };
-            thumbnailStrip.appendChild(thumb);
-        });
-    }
-    
-    viewer.classList.add('show');
-}
-
-// Galeride gezinme
-function navigateGallery(direction) {
-    if (currentImages.length <= 1) return;
-    
-    currentImageIndex += direction;
-    
-    // Döngüsel gezinme
-    if (currentImageIndex < 0) {
-        currentImageIndex = currentImages.length - 1;
-    } else if (currentImageIndex >= currentImages.length) {
-        currentImageIndex = 0;
-    }
-    
-    navigateToImage(currentImageIndex);
-}
-
-// navigateToImage fonksiyonunu güncelle (zoom'u sıfırla)
-function navigateToImage(index) {
-    if (index < 0 || index >= currentImages.length) return;
-    
-    currentImageIndex = index;
-    
-    const viewerImage = document.getElementById('viewerImage');
-    const counter = document.getElementById('imageCounter');
-    const thumbnails = document.querySelectorAll('.thumb-img');
-    
-    if (!viewerImage) return;
-    
-    // Zoom'u sıfırla (yeni resimde)
-    viewerImage.style.transform = 'scale(1)';
-    viewerImage.style.transition = 'transform 0.2s ease';
-    currentScale = 1;
-    initialDistance = 0;
-    
-    // Resmi güncelle
-    viewerImage.src = currentImages[index];
-    
-    // Sayaçı güncelle
-    if (counter) {
-        counter.textContent = `${index + 1}/${currentImages.length}`;
-    }
-    
-    // Küçük resimleri güncelle
-    thumbnails.forEach((thumb, idx) => {
-        if (idx === index) {
-            thumb.classList.add('active');
-            thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        } else {
-            thumb.classList.remove('active');
-        }
-    });
-}
-
-// Resmi kaydet (güncellenmiş)
-async function downloadCurrentImage(event) {
-    event.stopPropagation();
-    
-    const viewerImage = document.getElementById('viewerImage');
-    const imageSrc = viewerImage.src;
-    
-    if (!imageSrc || imageSrc === '') return;
-    
-    const btn = document.getElementById('downloadImageBtn');
-    btn.style.transform = 'scale(1.2)';
-    setTimeout(() => btn.style.transform = 'scale(1)', 200);
+// ImgBB'ye resim yükle (delete_url'li versiyon)
+async function resmiImgbbYukle(base64Data) {
+    const formData = new FormData();
+    formData.append('key', '176f42d16abd94bd651530d5e098e656');
+    formData.append('image', base64Data.split(',')[1]);
     
     try {
-        const response = await fetch(imageSrc);
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = 'haber-resmi-' + Date.now() + '.jpg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        window.URL.revokeObjectURL(blobUrl);
-        showToast('✅ Resim kaydedildi!');
-        
-        btn.style.backgroundColor = '#22c55e';
-        setTimeout(() => btn.style.backgroundColor = '', 500);
-        
-    } catch (error) {
-        const a = document.createElement('a');
-        a.href = imageSrc;
-        a.download = 'haber-resmi-' + Date.now() + '.jpg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast('✅ Resim kaydedildi!');
-    }
-}
-
-// Haber detayında hızlı içerik boyutu ayarı
-function quickAdjustContent(type, val) {
-    if(type === 'size') {
-        sets.contentSize = Math.max(10, Math.min(24, (sets.contentSize || 14) + val));
-        document.documentElement.style.setProperty('--content-size', sets.contentSize + 'px');
-    }
-    localStorage.setItem('khoj_sets', JSON.stringify(sets));
-    
-    // Toast ile bildir
-    showToast(`İçerik boyutu: ${sets.contentSize}px`);
-}
-
-// --- BASİT SOHBET ASK FONKSİYONU (ESKİ HALİ) ---
-async function ask() {
-    console.time('🤖 Gemini Cevap Süresi');
-    
-    const inp = document.getElementById('uInp');
-    const box = document.getElementById('cBox');
-    
-    if(!inp || !inp.value.trim()) return;
-    
-    const q = inp.value.trim();
-    inp.value = '';
-    
-    // Kullanıcı mesajını ekle
-    const userMsg = document.createElement('div');
-    userMsg.className = 'msg user';
-    userMsg.textContent = q;
-    box.appendChild(userMsg);
-    scrollToBottom('smooth');
-    
-    // AI mesajı (typing animasyonu ile)
-    const aiMsg = document.createElement('div');
-    aiMsg.className = 'msg ai';
-    aiMsg.id = 'currentAiResponse';
-    aiMsg.innerHTML = '<span class="typing-cursor">▋</span>';
-    box.appendChild(aiMsg);
-    scrollToBottom('smooth');
-
-    // --- KRİTİK NOKTA 1: HAFIZA YAPISINI HAZIRLA ---
-    // Gemini geçmişte 'ai' yerine 'model' kelimesini bekler.
-    let memory = chatHistory.map(m => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.text }]
-    }));
-
-    // --- KRİTİK NOKTA 2: BAĞLAM EKLEME ---
-    let currentPrompt = q;
-    // Eğer haber detayındaysan, haberi hafızaya değil sadece mevcut soruya bağlam olarak ekle
-    if (active && active.source !== "KHOJ" && active.title) {
-        currentPrompt = `Haber: ${active.title}\n\n${active.description || ''}\n\nSoru: ${q}`;
-    }
-
-    // Mevcut mesajı hafıza paketine ekle
-    memory.push({
-        role: 'user',
-        parts: [{ text: currentPrompt }]
-    });
-
-    try {
-        const response = await fetch(`${GEMINI_URL}?key=${decryptAPIKey(ENCRYPTED_KEY)}`, {
+        const response = await fetch('https://api.imgbb.com/1/upload', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: memory, // <-- Eskiden sadece tek mesaj vardı, şimdi tüm 'memory' gidiyor!
-                tools: [{ googleSearch: {} }],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 2048,
-                }
-            })
+            body: formData
         });
         
         const data = await response.json();
-        
-        let cevap = '';
-        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-            cevap = data.candidates[0].content.parts[0].text || 'Cevap alınamadı.';
+        if (data.success) {
+            return {
+                url: data.data.url,
+                delete_url: data.data.delete_url
+            };
         } else {
-            cevap = 'Üzgünüm, bir hata oluştu.';
+            console.error('ImgBB hatası:', data);
+            return null;
         }
-        
-        const temizCevap = metniTemizle(cevap);
-        aiMsg.innerHTML = temizCevap;
-        scrollToBottom('smooth');
-        
-        // --- KRİTİK NOKTA 3: HAFIZAYI GÜNCELLE VE KAYDET ---
-        if(active && active.source === "KHOJ") { 
-            chatHistory.push({role: 'user', text: q}); // Kullanıcının saf sorusunu ekle
-            chatHistory.push({role: 'ai', text: temizCevap}); // AI'nın cevabını ekle
-            
-            if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
-            localStorage.setItem('khoj_ai_history', JSON.stringify(chatHistory)); 
-        }
-        
-        console.timeEnd('🤖 Gemini Cevap Süresi');
-        
     } catch (e) {
-        console.error('Gemini hatası:', e);
-        aiMsg.innerHTML = 'Bağlantı hatası! 😕';
-        scrollToBottom('smooth');
+        console.error('ImgBB bağlantı hatası:', e);
+        return null;
     }
 }
 
-// Bekleyen cevapları listele (AYRI BİR MODALDA)
-function showPendingList() {
-    const pendingResponses = JSON.parse(localStorage.getItem('pending_ai_responses') || '[]');
-    if (pendingResponses.length === 0) {
-        showToast('Bekleyen cevap yok');
-        return;
+// Firebase'den verileri yükle
+async function verileriYukle() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "notlar"));
+        kayitlar = [];
+        querySnapshot.forEach((doc) => {
+            kayitlar.push({ id: Number(doc.id), ...doc.data() });
+        });
+        anaSayfayiGuncelle();
+    } catch (e) {
+        console.error("Veri yükleme hatası:", e);
+        kayitlar = [];
+        anaSayfayiGuncelle();
     }
+}
+
+async function kaydiGuncelle(kayit) {
+    try {
+        await setDoc(doc(db, "notlar", String(kayit.id)), kayit);
+    } catch (e) {
+        console.error("Kayıt hatası:", e);
+    }
+}
+
+async function kaydiSil(id) {
+    try {
+        await deleteDoc(doc(db, "notlar", String(id)));
+    } catch (e) {
+        console.error("Silme hatası:", e);
+    }
+}
+
+// Yardımcı fonksiyonlar
+function hashdenIdAl() {
+    const hash = window.location.hash;
+    if (hash.startsWith('#detay-')) return Number(hash.replace('#detay-', ''));
+    return null;
+}
+
+function hashGuncelle(id) { window.location.hash = id ? `detay-${id}` : ''; }
+
+function onayGoster(mesaj, callback) {
+    document.getElementById('onayMesaj').innerText = mesaj;
+    onayCallback = callback;
+    document.getElementById('onayModal').classList.add('aktif');
+}
+
+document.getElementById('onayEvet').addEventListener('click', () => {
+    document.getElementById('onayModal').classList.remove('aktif');
+    if (onayCallback) onayCallback(true);
+});
+
+document.getElementById('onayHayir').addEventListener('click', () => {
+    document.getElementById('onayModal').classList.remove('aktif');
+    if (onayCallback) onayCallback(false);
+});
+
+function sayfaGoster(sayfaId) {
+    document.getElementById('secenekModal').classList.remove('aktif');
+    document.getElementById('galeriModal').classList.remove('aktif');
+    document.getElementById('onayModal').classList.remove('aktif');
+    document.getElementById('baslikDuzenlemeAlani').style.display = 'none';
+    document.getElementById('aciklamaDuzenlemeAlani').style.display = 'none';
+    document.getElementById('baslikGoster').style.display = 'block';
+    document.getElementById('aciklamaMetin').style.display = 'block';
+    document.getElementById('baslikDuzenleBtn').style.display = 'inline-flex';
+    document.getElementById('aciklamaDuzenleBtn').style.display = 'inline-flex';
     
-    const m = document.getElementById('mdl');
-    let html = `
-        <div class="modal-header">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>📨 BEKLEYEN CEVAPLAR</h2>
-                <button class="btn-icon" onclick="closeM()">❌</button>
-            </div>
-        </div>
-        <div class="modal-body" style="padding-bottom:20px;">
-    `;
+    document.querySelectorAll('.sayfa').forEach(s => s.classList.remove('aktif'));
+    document.getElementById(sayfaId).classList.add('aktif');
+    if (sayfaId === 'anaSayfa') { hashGuncelle(null); anaSayfayiGuncelle(); }
+}
+
+function formatTarih(isoString) {
+    if (!isoString) return '--';
+    const d = new Date(isoString);
+    return d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+}
+
+function guncellemeTarihiSet(kayit) {
+    kayit.guncelleme = new Date().toISOString();
+    kaydiGuncelle(kayit);
+}
+
+function anaSayfayiGuncelle() {
+    const arama = document.getElementById('aramaInput').value.toUpperCase().trim();
+    let filtrelenmis = kayitlar.filter(k => k.baslik && k.baslik.toUpperCase().includes(arama));
+    filtrelenmis.sort((a, b) => (a.baslik || '').localeCompare(b.baslik || '', 'tr', { sensitivity: 'base' }));
     
-    pendingResponses.reverse().forEach((item, index) => {
-        const date = new Date(item.timestamp).toLocaleString('tr-TR');
-        html += `
-            <div style="background:var(--card-bg); border:1px solid var(--brd); border-radius:12px; padding:15px; margin-bottom:15px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                    <span style="background:#ef4444; color:white; padding:4px 10px; border-radius:20px; font-size:11px;">${item.context}</span>
-                    <span style="font-size:10px; color:var(--muted);">${date}</span>
-                </div>
-                <div style="font-size:13px; margin-bottom:10px; background:rgba(0,0,0,0.05); padding:8px; border-radius:8px;">
-                    <strong>Soru:</strong> ${item.question}
-                </div>
-                <div style="font-size:14px; padding:10px; background:var(--bg); border-radius:8px; max-height:200px; overflow-y:auto;">
-                    ${item.answer}
-                </div>
-                <button onclick="removePendingItem(${item.id})" 
-                    style="width:100%; margin-top:10px; padding:8px; background:#22c55e; color:white; border:none; border-radius:8px; font-weight:bold;">
-                    ✓ Okundu olarak işaretle ve sil
-                </button>
-            </div>
-        `;
+    const listeDiv = document.getElementById('baslikListesi');
+    listeDiv.innerHTML = '';
+    filtrelenmis.forEach(k => {
+        const item = document.createElement('div');
+        item.className = 'baslik-item';
+        item.innerHTML = `<span data-id="${k.id}">${k.baslik || 'PARÇA ADI'}</span>`;
+        listeDiv.appendChild(item);
     });
     
-    html += `
-        </div>
-        <div class="modal-footer">
-            <button class="btn-full" onclick="clearAllPending()">TÜMÜNÜ TEMİZLE</button>
-        </div>
-    `;
-    
-    m.innerHTML = html;
-    document.getElementById('ovl').style.display = 'flex';
+    document.querySelectorAll('.baslik-item span').forEach(el => {
+        el.addEventListener('click', (e) => {
+            const id = Number(e.target.dataset.id);
+            aktifKayitId = id;
+            detaySayfasiYukle(id);
+            hashGuncelle(id);
+            sayfaGoster('detaySayfa');
+        });
+    });
 }
 
-// Tek bir bildirimi sil
-function removePendingItem(id) {
-    let pendingResponses = JSON.parse(localStorage.getItem('pending_ai_responses') || '[]');
-    pendingResponses = pendingResponses.filter(item => item.id !== id);
-    localStorage.setItem('pending_ai_responses', JSON.stringify(pendingResponses));
+
+// Resim nesnesinden URL'yi güvenli al
+function resimUrlAl(resim) {
+    if (typeof resim === 'string') return resim;
+    if (resim && typeof resim === 'object' && resim.url) return resim.url;
+    return '';
+}
+
+// Verileri ayır (kullanilan ve cop)
+function verileriAyir() {
+    kullanilanResimler = [];
+    copResimler = [];
     
-    // Rozeti güncelle
-    if (pendingResponses.length > 0) {
-        addNotificationBadge(pendingResponses.length);
-    } else {
-        const badge = document.getElementById('aiNotificationBadge');
-        if (badge) badge.remove();
+    tumResimler.forEach(item => {
+        if (item.tip === 'aktif') {
+            kullanilanResimler.push(item);
+        } else if (item.tip === 'cop') {
+            copResimler.push(item);
+        }
+    });
+    
+    // Aktif sekmeye göre göster
+    resimleriGoster();
+    istatistikGuncelle();
+}
+
+// Tüm resimleri yükle
+async function resimleriYukle() {
+    yukleniyorDiv.style.display = 'block';
+    resimListesi.innerHTML = '';
+    tumResimler = [];
+    
+    try {
+        const querySnapshot = await getDocs(collection(db, "notlar"));
+        
+        querySnapshot.forEach((docSnap) => {
+            const not = { id: Number(docSnap.id), ...docSnap.data() };
+            
+            // 1. AKTİF RESİMLER (resimler listesindekiler)
+            if (not.resimler && not.resimler.length > 0) {
+                not.resimler.forEach((resim, index) => {
+                    tumResimler.push({
+                        notId: not.id,
+                        notBaslik: not.baslik || 'BAŞLIKSIZ',
+                        resim: resim,
+                        index: index,
+                        not: not,
+                        tip: 'aktif'
+                    });
+                });
+            }
+            
+            // 2. SİLİNMİŞ RESİMLER (ÇÖP)
+            if (not.silinmisResimler && not.silinmisResimler.length > 0) {
+                not.silinmisResimler.forEach((silinmis, index) => {
+                    tumResimler.push({
+                        notId: not.id,
+                        notBaslik: not.baslik || 'BAŞLIKSIZ (SİLİNMİŞ)',
+                        resim: { delete_url: silinmis.delete_url },
+                        index: index,
+                        not: not,
+                        tip: 'cop'
+                    });
+                });
+            }
+        });
+        
+        // Verileri ayır
+        verileriAyir();
+        
+    } catch (e) {
+        console.error('Yükleme hatası:', e);
+        mesajGoster('❌ Veriler yüklenemedi!', true);
+    } finally {
+        yukleniyorDiv.style.display = 'none';
     }
-    
-    // Listeyi yenile
-    showPendingList();
 }
 
-// Tüm bildirimleri temizle
-function clearAllPending() {
-    localStorage.removeItem('pending_ai_responses');
-    const badge = document.getElementById('aiNotificationBadge');
-    if (badge) badge.remove();
-    closeM();
-    showToast('Tüm bildirimler temizlendi');
+
+
+function detaySayfasiYukle(id) {
+    const kayit = kayitlar.find(k => k.id === id);
+    if (!kayit) return;
+    
+    document.querySelector('#bannerTarih .tarih-deger').innerText = `📅 ${formatTarih(kayit.guncelleme)}`;
+    document.getElementById('baslikGoster').innerText = kayit.baslik || 'PARÇA ADI';
+    document.getElementById('aciklamaMetin').innerText = kayit.aciklama || 'AÇIKLAMA YOK';
+    
+    const resimDiv = document.getElementById('resimListesi');
+    resimDiv.innerHTML = '';
+    
+    if (kayit.resimler && kayit.resimler.length > 0) {
+        kayit.resimler.forEach((resim, index) => {
+            const resimUrl = resimUrlAl(resim);
+            const kart = document.createElement('div');
+            kart.className = 'resim-kart';
+            kart.innerHTML = `<img src="${resimUrl}" data-index="${index}">`;
+            kart.addEventListener('click', (e) => {
+                if (e.target.tagName === 'IMG') {
+                    // Galeri listesini hazırla (tüm resimlerin URL'leri)
+                    galeriResimList = kayit.resimler.map(r => resimUrlAl(r));
+                    galeriIndex = index;
+                    document.getElementById('galeriImg').src = galeriResimList[galeriIndex];
+                    document.getElementById('galeriModal').classList.add('aktif');
+                    galeriButonGorunur = true;
+                    document.getElementById('galeriKontrol').style.opacity = '1';
+                }
+            });
+            resimDiv.appendChild(kart);
+        });
+    } else {
+        resimDiv.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:30px;">📭 RESİM YOK</p>';
+    }
 }
 
-// Bildirim rozeti ekle
-function addNotificationBadge(count) {
-    const geminiBtn = document.querySelector('.btn-gemini');
-    if (!geminiBtn) return;
+window.toggleGaleriButonlari = function() {
+    const kontrol = document.getElementById('galeriKontrol');
+    galeriButonGorunur = !galeriButonGorunur;
+    kontrol.style.opacity = galeriButonGorunur ? '1' : '0';
+};
+
+// Boş kart silme fonksiyonu
+async function bosKartSil(id) {
+    const kayit = kayitlar.find(k => k.id === id);
+    if (kayit) {
+        const bosKart = (
+            (kayit.baslik === '' || kayit.baslik === 'YENİ PARÇA') && 
+            kayit.aciklama === ' ' && 
+            (!kayit.resimler || kayit.resimler.length === 0)
+        );
+        
+        if (bosKart) {
+            await kaydiSil(id);
+            kayitlar = kayitlar.filter(k => k.id !== id);
+            console.log('Boş kart silindi');
+            return true;
+        }
+    }
+    return false;
+}
+
+// Başlatma
+document.addEventListener('DOMContentLoaded', async () => {
+    await verileriYukle();
+    history.pushState(null, null, location.href);
     
-    const oldBadge = document.getElementById('aiNotificationBadge');
-    if (oldBadge) oldBadge.remove();
-    
-    if (count > 0) {
-        const badge = document.createElement('span');
-        badge.id = 'aiNotificationBadge';
-        badge.style.cssText = 'position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; font-weight:bold; min-width:18px; text-align:center; cursor:pointer;';
-        badge.textContent = count;
-        badge.onclick = function(e) {
-            e.stopPropagation();
-            showPendingList();
+    window.addEventListener('popstate', async (e) => {
+        e.preventDefault();
+        
+        // Modal kontrolleri
+        if (document.getElementById('secenekModal').classList.contains('aktif')) {
+            document.getElementById('secenekModal').classList.remove('aktif');
+            history.pushState(null, null, location.href); return;
+        }
+        if (document.getElementById('galeriModal').classList.contains('aktif')) {
+            document.getElementById('galeriModal').classList.remove('aktif');
+            history.pushState(null, null, location.href); return;
+        }
+        if (document.getElementById('onayModal').classList.contains('aktif')) {
+            document.getElementById('onayModal').classList.remove('aktif');
+            history.pushState(null, null, location.href); return;
+        }
+        if (document.getElementById('baslikDuzenlemeAlani').style.display === 'block') {
+            document.getElementById('baslikIptal').click();
+            history.pushState(null, null, location.href); return;
+        }
+        if (document.getElementById('aciklamaDuzenlemeAlani').style.display === 'block') {
+            document.getElementById('aciklamaIptal').click();
+            history.pushState(null, null, location.href); return;
+        }
+        
+        const aktifSayfa = document.querySelector('.sayfa.aktif')?.id;
+        if (aktifSayfa === 'detaySayfa') { 
+            await bosKartSil(aktifKayitId);
+            sayfaGoster('anaSayfa'); 
+            history.pushState(null, null, location.href); 
+        } else { 
+            history.pushState(null, null, location.href); 
+        }
+    });
+
+    const id = hashdenIdAl();
+    if (id && kayitlar.some(k => k.id === id)) {
+        aktifKayitId = id;
+        detaySayfasiYukle(id);
+        sayfaGoster('detaySayfa');
+    } else {
+        sayfaGoster('anaSayfa');
+    }
+
+    // Arama
+    document.getElementById('aramaInput').addEventListener('input', anaSayfayiGuncelle);
+
+    // Yeni ekle (BOŞ KART ENGELLEMELİ)
+    document.getElementById('yeniEkleBtn').addEventListener('click', async () => {
+        const yeniId = Date.now();
+        const yeniKayit = { 
+            id: yeniId, 
+            baslik: '', 
+            aciklama: ' ', 
+            resimler: [], 
+            guncelleme: new Date().toISOString() 
         };
         
-        geminiBtn.style.position = 'relative';
-        geminiBtn.appendChild(badge);
-    }
-}
-
-
-function askAI(prompt) {
-    const inp = document.getElementById('uInp');
-    if(inp) {
-        inp.value = prompt;
-        ask();
-    }
-}
-
-function openFullNews(url) {
-    const fullView = document.createElement('div');
-    fullView.id = 'fullNewsView';
-    fullView.style = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column;`;
-    
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const headerBg = isDark ? '#1e293b' : '#f8f9fa';
-    const textColor = isDark ? '#f1f5f9' : '#1a1a1a';
-
-    fullView.innerHTML = `
-        <div style="padding: 10px; background: ${headerBg}; border-bottom: 1px solid var(--brd); display: flex; gap: 15px; align-items: center; color: ${textColor}">
-            <button onclick="document.getElementById('fullNewsView').remove()" 
-                style="padding: 8px 15px; border-radius: 8px; border: 1px solid var(--brd); background: var(--card-bg); color: var(--text); cursor: pointer;">❌ Kapat</button>
-            
-            <button onclick="triggerSummaryFromFull()" 
-                style="padding: 8px 15px; border-radius: 8px; border: none; background: #ef4444; color: white; cursor: pointer; font-weight: bold;">✨ Özetle</button>
-            
-            <span style="font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex:1;">${active.title}</span>
-        </div>
-        <iframe src="${url}" style="flex: 1; border: none; width: 100%; background: white !important;"></iframe>
-    `;
-    document.body.appendChild(fullView);
-}
-
-function triggerSummaryFromFull() {
-    const fv = document.getElementById('fullNewsView'); if(fv) fv.remove();
-    const inp = document.getElementById('uInp');
-    if(inp) { inp.value = "Bu haberi kısa ve açıklayıcı şekilde maddeler halinde özetle."; ask(); }
-}
-
-function saveNews() {
-    let saved = JSON.parse(localStorage.getItem('khoj_saved_news') || '[]');
-    const currentChat = document.getElementById('cBox') ? document.getElementById('cBox').innerHTML : "";
-    const newsToSave = { ...active, savedChat: currentChat, saveDate: new Date().toISOString() };
-    const existingIndex = saved.findIndex(x => x.title === active.title);
-    
-    // Detaydaki butonu bul (ID ile daha kesin)
-    const saveBtn = document.getElementById('detailSaveBtn');
-    
-    if (saveBtn) {
-        saveBtn.style.transform = 'scale(1.3)';
-        saveBtn.style.transition = 'transform 0.1s ease';
-    }
-    
-    if(existingIndex !== -1) { 
-        // Güncelleme
-        saved[existingIndex] = newsToSave; 
-        showToast("📝 Haber güncellendi!");
+        kayitlar.push(yeniKayit);
+        await kaydiGuncelle(yeniKayit);
         
-        if (saveBtn) {
-            saveBtn.classList.add('saved');
-            saveBtn.style.backgroundColor = '#22c55e';
-            saveBtn.title = 'Kayıtlı (güncelle)';
+        aktifKayitId = yeniId;
+        detaySayfasiYukle(yeniId);
+        hashGuncelle(yeniId);
+        sayfaGoster('detaySayfa');
+    });
+
+    // Banner geri
+    document.getElementById('bannerGeriBtn').addEventListener('click', async () => { 
+        await bosKartSil(aktifKayitId);
+        sayfaGoster('anaSayfa'); 
+        history.pushState(null, null, location.href); 
+    });
+
+// Banner sil (YENİ - delete_url'ler kalsın)
+document.getElementById('bannerSilBtn').addEventListener('click', () => {
+    onayGoster('🗑️ KAYDI TAMAMEN SİL?', async (onay) => {
+        if (onay) {
+            const kayit = kayitlar.find(k => k.id === aktifKayitId);
             
-            saveBtn.style.transform = 'scale(1.2)';
-            setTimeout(() => {
-                saveBtn.style.transform = 'scale(1)';
-            }, 200);
-        }
-    } else { 
-        // Yeni kaydet
-        saved.push(newsToSave); 
-        showToast("💾 Haber kaydedildi!");
-        
-        if (saveBtn) {
-            saveBtn.classList.add('saved');
-            saveBtn.style.backgroundColor = '#22c55e';
-            saveBtn.title = 'Kayıtlı (güncelle)';
-            
-            // Mavi flash
-            saveBtn.style.backgroundColor = '#3b82f6';
-            setTimeout(() => {
-                saveBtn.style.backgroundColor = '#22c55e';
-            }, 100);
-        }
-    }
-    
-    localStorage.setItem('khoj_saved_news', JSON.stringify(saved));
-    
-    // Rozeti güncelle
-    updateSavedButton();
-}
-
-// Farklı stiller için alternatif fonksiyon
-function updateSaveButtonStyle(btn, isSaved) {
-    if (isSaved) {
-        // Stil 1: Dolu yeşil buton
-        btn.classList.add('saved');
-        btn.style.backgroundColor = '#22c55e';
-        btn.style.color = 'white';
-        btn.style.border = 'none';
-        btn.title = 'Kayıtlı (güncelle)';
-    } else {
-        btn.classList.remove('saved', 'saved-outline');
-        btn.style.backgroundColor = '';
-        btn.style.color = '';
-        btn.style.border = '';
-        btn.title = 'Kaydet';
-    }
-}
-
-// Tüm kaydet butonlarını güncelle (detay açıldığında veya kaydetme yapıldığında)
-function updateAllSaveButtons() {
-    const saved = JSON.parse(localStorage.getItem('khoj_saved_news') || '[]');
-    
-    // Detaydaki butonu güncelle
-    const detailBtn = document.getElementById('detailSaveBtn');
-    if (detailBtn && active) {
-        const isSaved = saved.some(item => item.title === active.title);
-        if (isSaved) {
-            detailBtn.classList.add('saved');
-            detailBtn.style.backgroundColor = '#22c55e';
-            detailBtn.title = 'Kayıtlı (güncelle)';
-        } else {
-            detailBtn.classList.remove('saved');
-            detailBtn.style.backgroundColor = '';
-            detailBtn.title = 'Kaydet';
-        }
-    }
-}
-
-// Kaydedilenler butonunu güncelle
-function updateSavedButton() {
-    const saved = JSON.parse(localStorage.getItem('khoj_saved_news') || '[]');
-    const savedBtn = document.querySelector('.btn-save');
-    
-    if (savedBtn) {
-        // Önce eski rozeti temizle
-        const oldBadge = document.getElementById('savedBadge');
-        if (oldBadge) oldBadge.remove();
-        
-        if (saved.length > 0) {
-            // Yeni rozet ekle
-            const badge = document.createElement('span');
-            badge.id = 'savedBadge';
-            badge.style.cssText = 'position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; font-weight:bold; min-width:18px; text-align:center;';
-            badge.textContent = saved.length;
-            
-            savedBtn.style.position = 'relative';
-            savedBtn.appendChild(badge);
-        }
-    }
-}
-
-// Kayıtlı haber rozetini güncelle (opsiyonel)
-function updateSavedBadge() {
-    const saved = JSON.parse(localStorage.getItem('khoj_saved_news') || '[]');
-    const saveBtn = document.querySelector('.btn-icon.btn-save');
-    if (saveBtn && saved.length > 0) {
-        // Eğer rozet yoksa ekle
-        if (!document.getElementById('savedBadge')) {
-            const badge = document.createElement('span');
-            badge.id = 'savedBadge';
-            badge.style.cssText = 'position:absolute; top:-5px; right:-5px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:10px; font-weight:bold;';
-            badge.textContent = saved.length;
-            saveBtn.style.position = 'relative';
-            saveBtn.appendChild(badge);
-        } else {
-            document.getElementById('savedBadge').textContent = saved.length;
-        }
-    }
-}
-
-function shareNews(title, link) {
-    if (navigator.share) {
-        navigator.share({
-            title: title,
-            text: title + "\n\nBu habere göz at:\n",
-            url: link
-        }).then(() => {
-            console.log('Paylaşıldı');
-        }).catch((error) => {
-            console.log('Paylaşım iptal edildi veya hata oluştu', error);
-        });
-    } else {
-        navigator.clipboard.writeText(title + " " + link).then(() => {
-            alert("Haber linki panoya kopyalandı!");
-        });
-    }
-}
-
-function openSavedList() {
-    const saved = JSON.parse(localStorage.getItem('khoj_saved_news') || '[]');
-    const m = document.getElementById('mdl');
-    
-    let html = '<div class="modal-header"><h2>💾 KAYDEDİLENLER</h2><button class="btn-icon" onclick="closeM()" style="color:red;">❌</button></div>';
-    html += '<div class="modal-body">';
-    
-    if (saved.length === 0) {
-        html += "<p style='text-align:center; padding:40px; color:var(--muted);'>📭 Kayıtlı haber yok abi.</p>";
-    } else {
-        saved.forEach((n, i) => {
-            const date = n.saveDate ? new Date(n.saveDate).toLocaleDateString('tr-TR') : '';
-            html += `<div class="news-card" style="margin-bottom:10px; position:relative;">
-                <img src="${getBestImage(n, n.source)}" style="width:50px; height:50px; border-radius:10px;" onerror="this.src='logo.png'">
-                <div style="flex:1" onclick="openSavedDetail(${i})">
-                    <div class="news-meta">
-                        <span style="color:#ffcc00;">${n.source}</span>
-                        <span style="font-size:9px; margin-left:8px;">📅 ${date}</span>
-                    </div>
-                    <div class="news-title" style="font-size:0.9rem;">${n.title}</div>
-                </div>
-                <button onclick="deleteSaved(${i})" style="background:none; border:none; color:#ef4444; font-size:1.2rem; padding:10px; position:absolute; right:5px; top:50%; transform:translateY(-50%);">🗑️</button>
-            </div>`;
-        });
-    }
-    
-    html += '</div>';
-    html += '<div class="modal-footer"><button class="btn-full" onclick="closeM()">KAPAT</button></div>';
-    
-    m.innerHTML = html;
-    document.getElementById('ovl').style.display = 'flex';
-}
-
-function showNewNewsBadge() {
-    if (document.getElementById('newNewsBadge')) return;
-
-    const badge = document.createElement('div');
-    badge.id = 'newNewsBadge';
-    badge.innerHTML = `🔥 Yeni haberler geldi! <span onclick="softRefresh(); this.parentElement.remove();">Tıkla ve Karıştır</span>`;
-    badge.style = "position:fixed; top:70px; left:50%; transform:translateX(-50%); background:var(--primary); color:#000; padding:10px 20px; border-radius:30px; font-weight:bold; z-index:1000; box-shadow:0 4px 15px rgba(0,0,0,0.3); cursor:pointer; animation: slideDown 0.5s;";
-    document.body.appendChild(badge);
-}
-
-function handleMainInput() {
-    const inp = document.getElementById('mainInp');
-    if (!inp || !inp.value.trim()) return;
-
-    const val = inp.value.trim();
-    
-    const searchRegex = /\*(.*?)\*/; 
-    const match = val.match(searchRegex);
-
-    if (match) {
-        const query = match[1].trim();
-        performLocalNewsSearch(query);
-    } else {
-        openGeneralChatWithText(val);
-    }
-    inp.value = '';
-}
-
-function performLocalNewsSearch(q) {
-    const results = news.filter(n => n.title.toLowerCase().includes(q.toLowerCase()) || (n.description && n.description.toLowerCase().includes(q.toLowerCase())) );
-    activeSearchQuery = q; 
-    const m = document.getElementById('mdl');
-    let html = ` <div class="modal-header"> <div style="display:flex; justify-content:space-between; align-items:center; width:100%;"> <div> <h2 style="font-size:1.1rem;">🔍 ARAMA SONUÇLARI</h2> <p style="font-size:11px; opacity:0.7;">"${q}" kelimesi geçen haberler</p> </div> <span class="search-count">${results.length} HABER BULUNDU</span> <button class="btn-icon" onclick="closeSearch()" style="color:red;">❌</button> </div> </div> <div class="modal-body">`; 
-    if (results.length === 0) { html += `<p style="text-align:center; padding:40px; color:#888;">Aradığın kriterde haber bulamadım ABİ. 😔</p>`; } 
-    else { results.forEach(n => { const realIdx = news.findIndex(x => x.title === n.title); html += ` <div class="news-card" onclick="openDetail(${realIdx})" style="margin-bottom:10px; cursor:pointer;"> <img src="${n.thumbnail || 'logo.png'}" style="width:50px; height:50px;"> <div style="flex:1"> <div class="news-meta"><span>${n.source}</span></div> <div class="news-title" style="font-size:0.85rem;">${n.title}</div> </div> </div>`; }); } 
-    html += `</div><div class="modal-footer"> <button class="btn-full" onclick="closeSearch()">KAPAT</button> </div>`; 
-    m.innerHTML = html; document.getElementById('ovl').style.display = 'flex';
-} 
-
-function openGeneralChatWithText(text) { 
-    openGeneralChat(); 
-    setTimeout(() => { 
-        const chatInp = document.getElementById('uInp'); 
-        if (chatInp) { chatInp.value = text; ask(); } 
-    }, 300);
-}
-
-function deleteSaved(i) { 
-    let saved = JSON.parse(localStorage.getItem('khoj_saved_news') || '[]'); 
-    const deletedNews = saved[i]; // Silinen haberi hatırla
-    
-    saved.splice(i, 1); 
-    localStorage.setItem('khoj_saved_news', JSON.stringify(saved)); 
-    
-    // Ana ekrandaki rozeti güncelle
-    updateSavedButton();
-    
-    // Eğer şu an açık olan haber silindiyse, butonunu güncelle
-    if (active && deletedNews && active.title === deletedNews.title) {
-        const detailBtn = document.getElementById('detailSaveBtn');
-        if (detailBtn) {
-            detailBtn.classList.remove('saved');
-            detailBtn.style.backgroundColor = '';
-            detailBtn.title = 'Kaydet';
-        }
-        showToast("🗑️ Haber silindi!");
-    } else {
-        showToast("🗑️ Haber silindi!");
-    }
-    
-    // Eğer kaydedilenler listesi açıksa, listeyi yenile
-    const modalContent = document.getElementById('mdl').innerHTML;
-    if (modalContent.includes('KAYDEDİLENLER')) {
-        openSavedList(); // Listeyi yeniden aç (güncel haliyle)
-    }
-}
-function openSavedDetail(i) { active = JSON.parse(localStorage.getItem('khoj_saved_news'))[i]; openDetail(-2); }
-function openGeneralChat() { active = { title: "GENEL AI SOHBET", source: "KHOJ", description: "Her şeyi sorabilirsin abi." }; openDetail(-1); }
-function clearHistory() { chatHistory = []; localStorage.removeItem('khoj_ai_history'); closeM(); showToast("Sıfırlandı!"); }
-function closeM() { 
-    document.getElementById('ovl').style.display = 'none'; 
-    document.getElementById('mdl').classList.remove('fullscreen-chat'); // Tam ekran class'ını kaldır
-    autoScrollEnabled = true;
-    if (activeSearchQuery) {
-        performLocalNewsSearch(activeSearchQuery); 
-    }
-}
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    if (!toast) {
-        // Toast yoksa oluştur
-        const newToast = document.createElement('div');
-        newToast.id = 'toast';
-        newToast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--card-bg); color:var(--text); padding:10px 20px; border-radius:30px; border:1px solid var(--brd); font-weight:600; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.15); opacity:0; transition:opacity 0.3s ease; pointer-events:none;';
-        document.body.appendChild(newToast);
-        setTimeout(() => showToast(message), 100);
-        return;
-    }
-    
-    toast.textContent = message;
-    toast.style.opacity = '1';
-    
-    clearTimeout(window.toastTimeout);
-    window.toastTimeout = setTimeout(() => {
-        toast.style.opacity = '0';
-    }, 2000);
-}
-
-// ==================== RESİM GÖRÜNTÜLEYİCİ ====================
-
-// Resim görüntüleyiciyi aç
-function openImageViewer(imageSrc) {
-    const viewer = document.getElementById('imageViewer');
-    const viewerImage = document.getElementById('viewerImage');
-    
-    if (!viewer || !viewerImage) return;
-    
-    viewerImage.src = imageSrc;
-    viewer.classList.add('show');
-    
-    // Yakınlaştırma için touch/pinch olayları
-    setupPinchZoom();
-}
-
-function closeImageViewer(event) {
-    // Eğer tıklanan öğe image-viewer'ın kendisi veya gallery-container ise kapat
-    // (yani resmin dışındaki alan)
-    if (event.target.classList.contains('image-viewer') || 
-        event.target.classList.contains('gallery-container')) {
-        
-        closeViewer();
-    }
-}
-
-// Yardımcı fonksiyon - viewer'ı kapat
-function closeViewer() {
-    const viewer = document.getElementById('imageViewer');
-    if (!viewer) return;
-    
-    viewer.classList.remove('show');
-    
-    // Zoom'u sıfırla
-    const viewerImage = document.getElementById('viewerImage');
-    if (viewerImage) {
-        viewerImage.style.transform = 'scale(1)';
-        viewerImage.style.transition = 'transform 0.2s ease';
-    }
-    
-    // Değişkenleri sıfırla
-    currentScale = 1;
-    initialDistance = 0;
-    currentImages = [];
-    currentImageIndex = 0;
-    
-    console.log("Galeri kapatıldı");
-}
-
-// ==================== YAKINLAŞTIRMA/UZAKLAŞTIRMA FONKSİYONLARI ====================
-let initialDistance = 0;
-let currentScale = 1;
-let lastTouchX = 0;
-let lastTouchY = 0;
-let isDragging = false;
-
-function setupPinchZoom() {
-    const viewerImage = document.getElementById('viewerImage');
-    if (!viewerImage) return;
-    
-    // Touch başlangıcı
-    viewerImage.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
-            // İki parmakla dokunma - YAKINLAŞTIRMA
-            e.preventDefault();
-            const dx = e.touches[0].clientX - e.touches[1].clientX;
-            const dy = e.touches[0].clientY - e.touches[1].clientY;
-            initialDistance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Mevcut scale'i al
-            const transform = viewerImage.style.transform;
-            if (transform.includes('scale')) {
-                const match = transform.match(/scale\(([^)]+)\)/);
-                if (match) {
-                    currentScale = parseFloat(match[1]);
-                }
-            }
-            
-            console.log("Zoom başladı, mevcut scale:", currentScale);
-        } else if (e.touches.length === 1) {
-            // Tek parmakla dokunma - KAYDIRMA (sadece zoom yapıldıysa)
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-            isDragging = true;
-        }
-    }, { passive: false });
-    
-    // Touch hareketi
-    viewerImage.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2) {
-            // İki parmak - YAKINLAŞTIRMA/UZAKLAŞTIRMA
-            e.preventDefault();
-            
-            const dx = e.touches[0].clientX - e.touches[1].clientX;
-            const dy = e.touches[0].clientY - e.touches[1].clientY;
-            const currentDistance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (initialDistance > 0) {
-                // Scale hesapla: 0.5x ile 3x arası (uzaklaştırma da olsun)
-                let scale = (currentDistance / initialDistance) * currentScale;
-                scale = Math.max(0.5, Math.min(3, scale)); // Min 0.5x, max 3x
+            if (kayit) {
+                // Sadece resim URL'lerini sil, delete_url'leri bırak
+                const deleteUrlsOnly = kayit.resimler.map(r => ({
+                    delete_url: r.delete_url
+                }));
                 
-                // Scale'i uygula
-                viewerImage.style.transform = `scale(${scale})`;
-                viewerImage.style.transition = 'none'; // Anında zoom
+                // Notu güncelle: resimler boş, delete_url'ler kalsın
+                const guncelKayit = {
+                    ...kayit,
+                    baslik: '',  // Başlığı boşalt
+                    aciklama: ' ',  // Açıklamayı boşalt
+                    resimler: deleteUrlsOnly  // Sadece delete_url'ler kalsın
+                };
+                
+                await kaydiGuncelle(guncelKayit);
+                kayitlar = kayitlar.filter(k => k.id !== aktifKayitId);  // Listeden kaldır
             }
-        } else if (e.touches.length === 1 && isDragging && currentScale > 1) {
-            // Tek parmak - KAYDIRMA (sadece zoom yapıldıysa)
-            e.preventDefault();
             
-            const touchX = e.touches[0].clientX;
-            const touchY = e.touches[0].clientY;
-            
-            const deltaX = touchX - lastTouchX;
-            const deltaY = touchY - lastTouchY;
-            
-            // Mevcut transform'u al
-            let transform = viewerImage.style.transform;
-            let translateX = 0, translateY = 0;
-            
-            if (transform.includes('translate')) {
-                const matches = transform.match(/translate\(([^,]+)px,\s*([^)]+)px\)/);
-                if (matches) {
-                    translateX = parseFloat(matches[1]) || 0;
-                    translateY = parseFloat(matches[2]) || 0;
+            sayfaGoster('anaSayfa');
+        }
+    });
+});
+
+    // BAŞLIK DÜZENLE
+    document.getElementById('baslikDuzenleBtn').addEventListener('click', () => {
+        document.getElementById('baslikGoster').style.display = 'none';
+        document.getElementById('baslikDuzenleBtn').style.display = 'none';
+        document.getElementById('baslikDuzenlemeAlani').style.display = 'block';
+        document.getElementById('baslikInput').value = '';
+        document.getElementById('baslikInput').focus();
+        history.pushState(null, null, location.href);
+    });
+
+    document.getElementById('baslikKaydet').addEventListener('click', async () => {
+        const yeniBaslik = document.getElementById('baslikInput').value.trim();
+        if (yeniBaslik === '') {
+            alert('Lütfen bir başlık girin');
+            return;
+        }
+        
+        const kayit = kayitlar.find(k => k.id === aktifKayitId);
+        if (kayit) {
+            kayit.baslik = yeniBaslik;
+            guncellemeTarihiSet(kayit);
+        }
+        document.getElementById('baslikGoster').innerText = yeniBaslik;
+        document.getElementById('baslikGoster').style.display = 'block';
+        document.getElementById('baslikDuzenleBtn').style.display = 'inline-flex';
+        document.getElementById('baslikDuzenlemeAlani').style.display = 'none';
+        detaySayfasiYukle(aktifKayitId);
+    });
+
+    document.getElementById('baslikIptal').addEventListener('click', () => {
+        document.getElementById('baslikGoster').style.display = 'block';
+        document.getElementById('baslikDuzenleBtn').style.display = 'inline-flex';
+        document.getElementById('baslikDuzenlemeAlani').style.display = 'none';
+    });
+
+    // AÇIKLAMA DÜZENLE
+    document.getElementById('aciklamaDuzenleBtn').addEventListener('click', () => {
+        document.getElementById('aciklamaMetin').style.display = 'none';
+        document.getElementById('aciklamaDuzenleBtn').style.display = 'none';
+        document.getElementById('aciklamaDuzenlemeAlani').style.display = 'block';
+        
+        const kayit = kayitlar.find(k => k.id === aktifKayitId);
+        document.getElementById('aciklamaInput').value = kayit?.aciklama || '';
+        
+        history.pushState(null, null, location.href);
+    });
+
+    document.getElementById('aciklamaKaydet').addEventListener('click', async () => {
+        const yeniAciklama = document.getElementById('aciklamaInput').value.trim() || 'Açıklama yok';
+        const kayit = kayitlar.find(k => k.id === aktifKayitId);
+        
+        if (kayit) {
+            kayit.aciklama = yeniAciklama;
+            guncellemeTarihiSet(kayit);
+        }
+        
+        document.getElementById('aciklamaMetin').innerText = yeniAciklama;
+        document.getElementById('aciklamaMetin').style.display = 'block';
+        document.getElementById('aciklamaDuzenleBtn').style.display = 'inline-flex';
+        document.getElementById('aciklamaDuzenlemeAlani').style.display = 'none';
+        detaySayfasiYukle(aktifKayitId);
+    });
+
+    document.getElementById('aciklamaIptal').addEventListener('click', () => {
+        document.getElementById('aciklamaMetin').style.display = 'block';
+        document.getElementById('aciklamaDuzenleBtn').style.display = 'inline-flex';
+        document.getElementById('aciklamaDuzenlemeAlani').style.display = 'none';
+    });
+
+    // RESİM EKLE
+    document.getElementById('resimEkleBtn').addEventListener('click', () => {
+        document.getElementById('secenekModal').classList.add('aktif');
+        history.pushState(null, null, location.href);
+    });
+
+    // Galeriden Seç (YENİ - delete_url'li)
+    document.getElementById('galeriSec').addEventListener('click', () => {
+        document.getElementById('secenekModal').classList.remove('aktif');
+        
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('yuklemeKarti').style.display = 'block';
+                
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const result = await resmiImgbbYukle(event.target.result);
+                    
+                    if (result) {
+                        const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                        if (kayit) {
+                            if (!kayit.resimler) kayit.resimler = [];
+                            kayit.resimler.push({
+                                url: result.url,
+                                delete_url: result.delete_url
+                            });
+                            guncellemeTarihiSet(kayit);
+                            detaySayfasiYukle(aktifKayitId);
+                        }
+                    } else {
+                        alert('Resim yüklenemedi!');
+                    }
+                    document.getElementById('yuklemeKarti').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    });
+
+    // Kamera ile Çek (YENİ - delete_url'li)
+    document.getElementById('kameraSec').addEventListener('click', () => {
+        document.getElementById('secenekModal').classList.remove('aktif');
+        
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.setAttribute('capture', 'environment');
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Dosya çok büyük! Lütfen 10MB altında bir fotoğraf seçin.');
+                    return;
+                }
+                
+                document.getElementById('yuklemeKarti').style.display = 'block';
+                
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const result = await resmiImgbbYukle(event.target.result);
+                    
+                    if (result) {
+                        const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                        if (kayit) {
+                            if (!kayit.resimler) kayit.resimler = [];
+                            kayit.resimler.push({
+                                url: result.url,
+                                delete_url: result.delete_url
+                            });
+                            guncellemeTarihiSet(kayit);
+                            detaySayfasiYukle(aktifKayitId);
+                            setTimeout(() => { alert('📸 Fotoğraf eklendi!'); }, 100);
+                        }
+                    } else {
+                        alert('Fotoğraf yüklenemedi!');
+                    }
+                    document.getElementById('yuklemeKarti').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    });
+
+    document.getElementById('secenekIptal').addEventListener('click', () => { 
+        document.getElementById('secenekModal').classList.remove('aktif'); 
+    });
+
+    // GALERİ İŞLEMLERİ (YENİ - delete_url'li silme)
+    document.getElementById('galeriKapat').addEventListener('click', () => { 
+        document.getElementById('galeriModal').classList.remove('aktif'); 
+    });
+    
+    document.getElementById('galeriOnce').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (galeriResimList.length > 0) {
+            galeriIndex = (galeriIndex - 1 + galeriResimList.length) % galeriResimList.length;
+            document.getElementById('galeriImg').src = galeriResimList[galeriIndex];
+        }
+    });
+    
+    document.getElementById('galeriSonra').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (galeriResimList.length > 0) {
+            galeriIndex = (galeriIndex + 1) % galeriResimList.length;
+            document.getElementById('galeriImg').src = galeriResimList[galeriIndex];
+        }
+    });
+
+document.getElementById('galeriSil').addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (galeriResimList.length > 0) {
+        onayGoster('🗑️ BU RESMİ SİL?', async (onay) => {
+            if (onay) {
+                const kayit = kayitlar.find(k => k.id === aktifKayitId);
+                if (kayit && kayit.resimler && kayit.resimler.length > galeriIndex) {
+                    
+                    const silinecekResim = kayit.resimler[galeriIndex];
+                    
+                    if (typeof silinecekResim === 'object' && silinecekResim.delete_url) {
+                        // Delete_url'i ayır
+                        const deleteUrl = silinecekResim.delete_url;
+                        
+                        // Resmi listeden TAMAMEN çıkar
+                        kayit.resimler.splice(galeriIndex, 1);
+                        
+                        // Delete_url'i "silinmisResimler" listesine ekle
+                        kayit.silinmisResimler = kayit.silinmisResimler || [];
+                        kayit.silinmisResimler.push({
+                            delete_url: deleteUrl,
+                            silinmeTarihi: new Date().toISOString()
+                        });
+                        
+                    } else {
+                        // Eski tip string resim - direkt sil (delete_url yok zaten)
+                        kayit.resimler.splice(galeriIndex, 1);
+                    }
+                    
+                    // Değişiklikleri Firebase'e kaydet
+                    guncellemeTarihiSet(kayit);
+                    
+                    // Galeriyi güncelle
+                    if (kayit.resimler.length === 0) {
+                        document.getElementById('galeriModal').classList.remove('aktif');
+                    } else {
+                        galeriResimList = kayit.resimler.map(r => resimUrlAl(r));
+                        galeriIndex = Math.min(galeriIndex, kayit.resimler.length - 1);
+                        document.getElementById('galeriImg').src = galeriResimList[galeriIndex];
+                    }
+                    
+                    detaySayfasiYukle(aktifKayitId);
                 }
             }
-            
-            // Yeni pozisyon
-            translateX += deltaX;
-            translateY += deltaY;
-            
-            viewerImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentScale})`;
-            
-            lastTouchX = touchX;
-            lastTouchY = touchY;
+        });
+    }
+});
+
+    document.getElementById('galeriModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('galeriModal')) {
+            document.getElementById('galeriModal').classList.remove('aktif');
+        }
+    });
+
+    // ZOOM
+    const galeriImg = document.getElementById('galeriImg');
+    const galeriKapsayici = document.getElementById('galeriKapsayici');
+    let zoomScale = 1; 
+    let lastDistance = 0;
+    let isPanning = false;
+    let startX = 0, startY = 0, translateX = 0, translateY = 0;
+
+    function sifirlaZoom() {
+        zoomScale = 1; translateX = 0; translateY = 0;
+        galeriImg.style.transform = `translate(0px, 0px) scale(1)`;
+        galeriImg.style.transition = 'transform 0.2s';
+    }
+
+    const galeriModal = document.getElementById('galeriModal');
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target.classList.contains('aktif')) sifirlaZoom();
+        });
+    });
+    observer.observe(galeriModal, { attributes: true, attributeFilter: ['class'] });
+
+    document.getElementById('galeriOnce').addEventListener('click', () => { setTimeout(sifirlaZoom, 50); });
+    document.getElementById('galeriSonra').addEventListener('click', () => { setTimeout(sifirlaZoom, 50); });
+
+    galeriImg.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const dx = e.touches[0].pageX - e.touches[1].pageX;
+            const dy = e.touches[0].pageY - e.touches[1].pageY;
+            lastDistance = Math.sqrt(dx * dx + dy * dy);
+            galeriImg.style.transition = 'none';
+        } else if (e.touches.length === 1 && zoomScale > 1) {
+            isPanning = true;
+            startX = e.touches[0].pageX - translateX;
+            startY = e.touches[0].pageY - translateY;
+            galeriImg.style.transition = 'none';
+            e.preventDefault();
         }
     }, { passive: false });
-    
-    // Touch bitişi - BURASI KRİTİK: Scale'i KALICI yap
-    viewerImage.addEventListener('touchend', (e) => {
-        if (e.touches.length === 0) {
-            // İki parmak kalktığında mevcut scale'i KORU
-            const transform = viewerImage.style.transform;
-            if (transform.includes('scale')) {
-                const match = transform.match(/scale\(([^)]+)\)/);
-                if (match) {
-                    currentScale = parseFloat(match[1]);
-                    console.log("Zoom bitti, yeni scale:", currentScale);
-                }
+
+    galeriImg.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            const dx = e.touches[0].pageX - e.touches[1].pageX;
+            const dy = e.touches[0].pageY - e.touches[1].pageY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (lastDistance > 0) {
+                const delta = (distance - lastDistance) * 0.01;
+                const newScale = Math.min(Math.max(zoomScale + delta, 1), 4);
+                zoomScale = newScale;
+                galeriImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
+                lastDistance = distance;
             }
-            
-            initialDistance = 0;
-            isDragging = false;
-            
-            // Smooth transition ekle (kaydırma için)
-            viewerImage.style.transition = 'transform 0.2s ease';
-        } else if (e.touches.length === 1) {
-            // Bir parmak kaldıysa kaydırmaya devam et
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
+        } else if (e.touches.length === 1 && isPanning) {
+            e.preventDefault();
+            translateX = e.touches[0].pageX - startX;
+            translateY = e.touches[0].pageY - startY;
+            const imgWidth = galeriImg.offsetWidth * zoomScale;
+            const imgHeight = galeriImg.offsetHeight * zoomScale;
+            const containerWidth = galeriKapsayici.offsetWidth;
+            const containerHeight = galeriKapsayici.offsetHeight;
+            const maxX = Math.max(0, (imgWidth - containerWidth) / 2);
+            translateX = Math.min(maxX, Math.max(-maxX, translateX));
+            const maxY = Math.max(0, (imgHeight - containerHeight) / 2);
+            translateY = Math.min(maxY, Math.max(-maxY, translateY));
+            galeriImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
         }
-    }, { passive: true });
-    
-    // Çift tıklama ile zoom sıfırlama
-    viewerImage.addEventListener('dblclick', (e) => {
+    }, { passive: false });
+
+    galeriImg.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) lastDistance = 0;
+        if (e.touches.length === 0) isPanning = false;
+    });
+
+    galeriImg.addEventListener('dblclick', (e) => {
         e.preventDefault();
-        viewerImage.style.transform = 'scale(1)';
-        viewerImage.style.transition = 'transform 0.3s ease';
-        currentScale = 1;
-        initialDistance = 0;
-        console.log("Zoom sıfırlandı");
+        if (zoomScale > 1.1) {
+            zoomScale = 1; translateX = 0; translateY = 0;
+        } else {
+            zoomScale = 2.5;
+            const rect = galeriImg.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            translateX = (galeriKapsayici.offsetWidth / 2) - (clickX * zoomScale);
+            translateY = (galeriKapsayici.offsetHeight / 2) - (clickY * zoomScale);
+        }
+        galeriImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
+        galeriImg.style.transition = 'transform 0.2s';
+    });
+    
+    galeriKapsayici.addEventListener('touchstart', (e) => {
+        if (zoomScale > 1) e.preventDefault();
+    }, { passive: false });
+});
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+        .then(registration => { console.log('SW kaydedildi:', registration.scope); })
+        .catch(err => { console.log('SW hatası:', err); });
     });
 }
 </script>
 </body>
-
 </html>

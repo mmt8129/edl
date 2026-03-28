@@ -63,6 +63,20 @@ display: flex;
 
 }
 
+/* Kırmızı çerçeve (son 3 gün) */
+.tarih-etiket-kart.kirmizi {
+    color: #dc3545;
+    background-color: #fff0f0;
+    border: 1px solid #dc3545;
+}
+
+/* Yeşil çerçeve (3 günden eski) */
+.tarih-etiket-kart.yesil {
+    color: #2e7d32;
+    background-color: #e8f5e9;
+    border: 1px solid #2e7d32;
+}
+
 .baslik-item-metin {
     flex: 1;
     cursor: pointer;
@@ -201,7 +215,7 @@ display: flex;
             <span class="tarih-etiket">SON GÜNCELLEME</span>
             <span class="tarih-deger">📅 --</span>
         </div>
-        <button class="banner-sil" id="bannerSilBtn">🗑️ SİL</button>
+        <button class="banner-sil" id="bannerSilBtn">🗑️PARÇA SİL</button>
     </div>
     <div class="detay-icerik">
         <!-- BAŞLIK KARTI -->
@@ -423,10 +437,18 @@ function anaSayfayiGuncelle() {
     filtrelenmis.forEach(k => {
        const item = document.createElement('div');
 item.className = 'baslik-item';
+
+// Güncelleme tarihine göre renk belirle
+const guncellemeTarihi = new Date(k.guncelleme);
+const simdi = new Date();
+const farkGun = (simdi - guncellemeTarihi) / (1000 * 60 * 60 * 24);
+const renkSinifi = farkGun <= 3 ? 'kirmizi' : 'yesil';
+
 item.innerHTML = `
     <span data-id="${k.id}" class="baslik-item-metin">${k.baslik || 'PARÇA ADI'}</span>
-    <span class="tarih-etiket-kart">📅 ${formatTarih(k.guncelleme)}</span>
+    <span class="tarih-etiket-kart ${renkSinifi}">📅 ${formatTarih(k.guncelleme)}</span>
 `;
+
 listeDiv.appendChild(item);
     });
     

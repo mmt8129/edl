@@ -5,11 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 <title>📱 RESİMLİ NOTLAR</title>
 <style>
+	* {
+    font-size: 1.1em;  /* Tüm yazıları %10 küçültür */
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
 body { background-color: #faf9f6; min-height: 100vh; padding-bottom: 20px; font-size: 13px; }
 h1, h2, h3, p, span, button, input, textarea { font-weight: 700 !important; letter-spacing: 0.3px; }
 button {
-    border: none; border-radius: 30px; padding: 8px 10px; font-size: 10px; font-weight: 700;
+    border: none; border-radius: 30px; padding: 8px 10px; font-size: 15px; font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: all 0.1s ease; border: 2px solid transparent;
 }
@@ -38,14 +42,52 @@ button:active { transform: scale(0.97); }
 
 .ana-icerik { padding: 12px; }
 .arama-kutusu {
-    width: 100%; padding: 6px 18px; font-size: 13px; border: 3px solid #ddd;
+    width: 100%; padding: 10px 20px; font-size: 15px; border: 3px solid #ddd;
     border-radius: 50px; margin-bottom: 20px; background-color: white;
 }
+
 .baslik-item {
-    background-color: white; padding: 14px 22px; margin-bottom: 10px; border-radius: 40px;
-    display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.03); border: 2px solid #eee; font-size: 12px;
+    background: white;
+    padding: 14px 22px;
+    margin-bottom: 12px;
+    border-radius: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 6px solid #2b7be4;
+    box-shadow: 0 8px 16px -8px rgba(0,0,0,0.2), 0 2px 4px rgba(0,0,0,0.05);
+display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+
 }
+
+.baslik-item-metin {
+    flex: 1;
+    cursor: pointer;
+    word-break: break-word;
+	text-transform: uppercase;
+}
+
+/* Kart içindeki tarih etiketi */
+.tarih-etiket-kart {
+    display: inline-block;
+    padding: 4px 13px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #dc3545;
+    background-color: #fff0f0;
+    border: 1.5px solid #dc3545;
+    border-radius: 30px;
+    white-space: nowrap;
+}
+
+.baslik-item:active {
+    box-shadow: inset 3px 3px 6px rgba(0,0,0,0.1), inset -2px -2px 4px rgba(255,255,255,0.6);
+    transform: translateY(1px);
+}
+
 .baslik-item span { cursor: pointer; flex: 1; }
 
 .detay-icerik { padding: 16px; margin-top: 10px; }
@@ -61,9 +103,9 @@ button:active { transform: scale(0.97); }
     background: none; box-shadow: none; padding: 0 !important; font-size: 16px !important;
     min-width: auto; border: none; color: #2b7be4;
 }
-.baslik-metin { font-size: 13px; font-weight: 700; word-break: break-word; }
+.baslik-metin { text-transform: uppercase; text-shadow: 1px 1px 0px rgba(0,0,0,0.05); font-size: 20px;  font-weight: bold; color: #dc3545; word-break: break-word; }
 .baslik-input {
-    font-size: 12px; padding: 8px 15px; border: 3px solid #2b7be4;
+    font-size: 20px; padding: 8px 15px; border: 3px solid #2b7be4;
     border-radius: 30px; width: 100%; margin-bottom: 15px;
 }
 .aciklama-kutu {
@@ -154,21 +196,21 @@ button:active { transform: scale(0.97); }
 <!-- DETAY SAYFASI -->
 <div id="detaySayfa" class="sayfa">
     <div class="sabit-banner">
-        <button class="banner-geri" id="bannerGeriBtn">⬅️</button>
+        <button class="banner-geri" id="bannerGeriBtn">⬅️ GERİ</button>
         <div class="banner-tarih" id="bannerTarih">
             <span class="tarih-etiket">SON GÜNCELLEME</span>
             <span class="tarih-deger">📅 --</span>
         </div>
-        <button class="banner-sil" id="bannerSilBtn">🗑️</button>
+        <button class="banner-sil" id="bannerSilBtn">🗑️PARÇAYI SİL</button>
     </div>
     <div class="detay-icerik">
         <!-- BAŞLIK KARTI -->
         <div class="detay-kart">
-            <div class="kart-baslik"><span>📌 Parça Adı</span><button id="baslikDuzenleBtn">✏️</button></div>
+            <div class="kart-baslik"><span>📌 Parça Adı</span><button id="baslikDuzenleBtn">✏️Parça Adı Yaz</button></div>
             <div>
                 <span class="baslik-metin" id="baslikGoster">PARÇA ADI</span>
                 <div id="baslikDuzenlemeAlani" style="display: none;">
-                    <input type="text" id="baslikInput" class="baslik-input" placeholder="BAŞLIK GİR">
+                    <input type="text" id="baslikInput" class="baslik-input" placeholder="Parça Adını Yaz">
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
                         <button class="btn-mavi" id="baslikKaydet">✅ KAYDET</button>
                         <button class="btn-kirmizi" id="baslikIptal">❌ İPTAL</button>
@@ -179,7 +221,7 @@ button:active { transform: scale(0.97); }
         
         <!-- AÇIKLAMA KARTI -->
         <div class="detay-kart">
-            <div class="kart-baslik"><span>📝 AÇIKLAMA</span><button id="aciklamaDuzenleBtn">✏️</button></div>
+            <div class="kart-baslik"><span>📝 AÇIKLAMA</span><button id="aciklamaDuzenleBtn">✏️Açıklama Yaz</button></div>
             <div>
                 <div class="aciklama-kutu" id="aciklamaMetin">AÇIKLAMA</div>
                 <div id="aciklamaDuzenlemeAlani" style="display: none;">
@@ -194,7 +236,7 @@ button:active { transform: scale(0.97); }
         
         <!-- RESİMLER KARTI -->
         <div class="detay-kart">
-            <div class="kart-baslik"><span>🖼️ RESİMLER</span><button id="resimEkleBtn">📷</button></div>
+            <div class="kart-baslik"><span>🖼️ RESİMLER</span><button id="resimEkleBtn">📷Resim Ekle</button></div>
             <div id="resimListesi" class="resim-grid"></div>
             
             <div id="yuklemeKarti" style="display: none; margin-top: 10px;">
@@ -374,15 +416,18 @@ function guncellemeTarihiSet(kayit) {
 function anaSayfayiGuncelle() {
     const arama = document.getElementById('aramaInput').value.toUpperCase().trim();
     let filtrelenmis = kayitlar.filter(k => k.baslik && k.baslik.toUpperCase().includes(arama));
-    filtrelenmis.sort((a, b) => (a.baslik || '').localeCompare(b.baslik || '', 'tr', { sensitivity: 'base' }));
+    filtrelenmis.sort((a, b) => new Date(b.guncelleme) - new Date(a.guncelleme));
     
     const listeDiv = document.getElementById('baslikListesi');
     listeDiv.innerHTML = '';
     filtrelenmis.forEach(k => {
-        const item = document.createElement('div');
-        item.className = 'baslik-item';
-        item.innerHTML = `<span data-id="${k.id}">${k.baslik || 'PARÇA ADI'}</span>`;
-        listeDiv.appendChild(item);
+       const item = document.createElement('div');
+item.className = 'baslik-item';
+item.innerHTML = `
+    <span data-id="${k.id}" class="baslik-item-metin">${k.baslik || 'PARÇA ADI'}</span>
+    <span class="tarih-etiket-kart">📅 ${formatTarih(k.guncelleme)}</span>
+`;
+listeDiv.appendChild(item);
     });
     
     document.querySelectorAll('.baslik-item span').forEach(el => {
@@ -507,7 +552,7 @@ function detaySayfasiYukle(id) {
             resimDiv.appendChild(kart);
         });
     } else {
-        resimDiv.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:30px;">📭 RESİM YOK</p>';
+        resimDiv.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:30px; font-size: 15px;">📭 RESİM YOK</p>';
     }
 }
 
@@ -656,7 +701,7 @@ document.getElementById('bannerSilBtn').addEventListener('click', () => {
     });
 
     document.getElementById('baslikKaydet').addEventListener('click', async () => {
-        const yeniBaslik = document.getElementById('baslikInput').value.trim();
+        const yeniBaslik = document.getElementById('baslikInput').value.trim().toUpperCase();
         if (yeniBaslik === '') {
             alert('Lütfen bir başlık girin');
             return;
